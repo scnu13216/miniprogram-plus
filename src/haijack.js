@@ -288,7 +288,7 @@ async function page_haijack_onShareAppMessage(options) {
         for (let i = 0; i < options.mixins.length; i++) {
             options.mixins[i].onShareAppMessage && await options.mixins[i].onShareAppMessage.call(this)
         }
-        origian_onShareAppMessage && origian_onShareAppMessage.call(this)
+        return origian_onShareAppMessage && origian_onShareAppMessage.call(this)
     }
 }
 
@@ -299,7 +299,7 @@ async function page_haijack_onShareTimeline(options) {
         for (let i = 0; i < options.mixins.length; i++) {
             options.mixins[i].onShareTimeline && await options.mixins[i].onShareTimeline.call(this)
         }
-        origian_onShareTimeline && origian_onShareTimeline.call(this)
+        return origian_onShareTimeline && origian_onShareTimeline.call(this)
     }
 }
 
