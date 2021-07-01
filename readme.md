@@ -71,7 +71,7 @@ mixins 内部写法与页面对象一致即可
 
 5、新增自定义方法统一编写位置 methods
 
-6、监听组件抛出事件和执行方法 this._on('event',function(data)=>{})
+6、监听组件抛出事件和执行方法 this.$on('event',function(data)=>{})
 
 7、新增请求方法(支持promise) await this.$axios.post({api,data,headers,dataType,callback,loading})
 
@@ -91,9 +91,9 @@ mixins 内部写法与组件对象一致即可
 
 4、新增计算属性 computed
 
-5、抛出事件（只能被直接上级 _on 监听） this._emit('event',data)。
+5、抛出事件（只能被直接上级 $on 监听） this.$emit('event',data)。
 
-6、监听组件抛出事件和执行方法 this._on('event',function(data)=>{})
+6、监听组件抛出事件和执行方法 this.$on('event',function(data)=>{})
 
 7、新增请求方法(支持promise) await this.$axios.post({api,data,headers,dataType,callback,loading})
 
@@ -180,5 +180,24 @@ new Haijack({config})
 
 页面和组件都可以通过 this._config 获取全局属性
 
+
+```
+util 里面的方法 
+
+函数防抖 设定时间内多次事件一次相应
+methods:{
+    handler:wx.debounce(function(e,{data,detail}){
+        this.data[key]
+    },time)
+}
+
+函数节流 函数每隔一段时间触发一次
+methods:{
+    handler:wx.throttle(function(e,{data,detail}){
+        this.data[key]
+    },time)
+}
+
+```
 
 

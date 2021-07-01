@@ -40,6 +40,8 @@ function throttle(fn, gap) {
         }
     };
 }
+wx.throttle = throttle
+wx.debounce = debounce
 
 module.exports = {
     debounce,

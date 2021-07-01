@@ -380,6 +380,10 @@ function HJ_Component() {
             originComponent(options)
             return
         }
+        if(!options.hasOwnProperty('name')){
+            originComponent(options)
+            return
+        }
         // ! 这个才是常规的 component 的相关操作
         // 缺省值填充
         if (!options.hasOwnProperty('methods')) {
