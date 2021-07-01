@@ -1,0 +1,149 @@
+.AlertBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+.AlertBar_fadeOut {
+  -webkit-animation-name: fadeOut;
+  animation: fadeOut 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
+  z-index: -9999
+}
+
+.AlertBar_fadeIn {
+  -webkit-animation-name: fadeIn;
+  animation: fadeIn 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
+  z-index: 9999;
+  animation-fill-mode: forwards;
+}
+
+@-webkit-keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.fadeOut {
+  -webkit-animation-name: fadeOut;
+  animation-name: fadeOut;
+  animation-fill-mode: forwards;
+}
+
+@-webkit-keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, .7);
+}
+
+.AlertBar_info {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 560rpx;
+  min-height: 330rpx;
+  background: #ffffff;
+  border-radius: 12rpx;
+}
+
+.AlertBar_info_icon {
+  position: absolute;
+  top: -60rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120rpx;
+  height: 120rpx;
+}
+
+.AlertBar_info_title {
+  text-align: center;
+  color: #777;
+  font-size: 32rpx;
+  margin: 70rpx 0 12rpx 0;
+}
+
+.AlertBar_info_content {
+  color: #000;
+  font-size: 32rpx;
+  text-align: center;
+  padding: 0 30rpx;
+  margin-bottom: 50rpx;
+  box-sizing: border-box;
+}
+
+.AlertBar_info_fn {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100rpx;
+  display: flex;
+  align-items: center;
+  border-top: 1rpx solid #DDDDDD;
+  border-bottom-left-radius: 12rpx;
+  border-bottom-right-radius: 12rpx;
+  overflow: hidden;
+}
+
+.AlertBar_info_cancel {
+  flex: 1;
+  height: 100rpx;
+  line-height: 100rpx;
+  text-align: center;
+  font-size: 32rpx;
+  color: #999999;
+  border-right: 1rpx solid #DDDDDD;
+}
+
+.AlertBar_info_confirm {
+  flex: 1;
+  height: 100rpx;
+  line-height: 100rpx;
+  text-align: center;
+  font-size: 32rpx;
+  color: var(--color-primary);
+}
+
+.AlertBar_info_cancel:active,
+.AlertBar_info_confirm:active {
+  background: #cbcbcb;
+}

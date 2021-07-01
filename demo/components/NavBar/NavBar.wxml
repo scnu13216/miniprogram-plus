@@ -1,0 +1,17 @@
+<!--components/NavBar/NavBar.wxml-->
+<view class="top-nav {{titleAlign}}" style="height:{{navHeight}}px;padding-top:{{navPadTop}}px;">
+    <view wx:if="{{back}}" class="back" bindtap="handle_back">
+        <image src="/images/Component/NavBar/back.png" mode="aspectFit"></image>
+    </view>
+    <view class="center {{mode=='custom' ? 'custom':''}}">
+        <block wx:if="{{mode == 'title'}}">
+            <view class="title oneline">
+                {{title}}
+            </view>
+        </block>
+        <block wx:if="{{mode == 'custom'}}">
+            <slot></slot>
+        </block>
+    </view>
+    <view class="pad-right"></view>
+</view>

@@ -1,0 +1,26 @@
+<!--index.wxml-->
+<view class="container">
+  <view class="button" hover-class="button-hover" bindtap="handle_changefoo">修改foo</view>
+  <view class="button" hover-class="button-hover" bindtap="handle_change_data">修改页面的数据</view>
+  <view>页面的数据 foo :{{foo}}</view>
+  <text>\n</text>
+  <view>计算属性 compute_foo：{{compute_foo}}</view>
+  <text>\n</text>
+  <view data-foo="来自标签的参数" class="button" hover-class="button-hover" bindtap="handle_get_event_data">快速获取事件的参数</view>
+  <text>\n</text>
+  
+  <view class="button" hover-class="button-hover" bindtap="handle_run_component_func1">直接调用component对象方法</view>
+  <text>\n</text>
+  <view class="button" hover-class="button-hover" bindtap="handle_changeLanguage">试一下切换语言</view>
+  <view>多语言：{{_t.home}}</view>
+  <text>\n</text>
+
+  <view class="button" hover-class="button-hover" bindtap="mixin_test">调用mixin里面的方法</view>
+
+
+  <view class="button" hover-class="button-hover" bindtap="handle_commitHaha">改变全局变量 haha 的值</view>
+  <text>页面获取全局状态 haha:{{haha}}</text>
+  <view class="button" hover-class="button-hover" bindtap="handle_doRequest">发起请求</view>
+
+  <demoComponent></demoComponent>
+</view>

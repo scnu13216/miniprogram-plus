@@ -5,6 +5,7 @@ class Store {
     getters
     component_stack
     constructor() {
+        this.component_stack = {}
         this.getters = app.store.getters
         autoStore()
     }
@@ -24,7 +25,6 @@ class Store {
                         component[component.computed_obj[target_property]]()
                     }
                 }
-
             }
         }
     }

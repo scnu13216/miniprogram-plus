@@ -1,0 +1,62 @@
+/* components/NavBar/NavBar.wxss */
+
+.top-nav {
+    display: flex;
+    align-items: center;
+}
+
+.top-nav.left {
+    justify-content: flex-start;
+}
+
+.top-nav.center {
+    justify-content: space-between;
+}
+
+.top-nav .back {
+    width: 80rpx;
+    height: 90rpx;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-right: 120rpx;
+}
+
+.top-nav .back image {
+    width: 35rpx;
+    height: 44rpx;
+    position: relative;
+    left: 2.5rpx;
+    top: 0rpx;
+}
+
+.top-nav .center {
+    width: 100%;
+}
+
+.top-nav .pad-right {
+    width: 200rpx;
+    flex-shrink: 0;
+    height: 100%;
+}
+
+.center .title {
+    font-size: 34rpx;
+    text-align: center;
+    padding: 0 20rpx;
+    font-weight: 500;
+
+}
+
+.oneline {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.custom {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}

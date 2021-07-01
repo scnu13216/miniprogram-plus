@@ -1,0 +1,15 @@
+
+
+<view class="AlertBar {{isAlert ? 'AlertBar_fadeIn' : 'AlertBar_fadeOut'}}">
+  <view class="mask"></view>
+  <view class="AlertBar_info">
+    <image src="/images/Component/AlertBar/info.png" class="AlertBar_info_icon"></image>
+    <view class="AlertBar_info_title">温馨提示</view>
+    <view class="AlertBar_info_content">{{content}}</view>
+    <view style="height:100rpx"></view>
+    <view class="AlertBar_info_fn">
+      <view class="AlertBar_info_cancel" bindtap="cancel" wx:if="{{showCancel == 1}}">{{cancelText}}</view>
+      <view class="AlertBar_info_confirm" bindtap="confirm">{{confirmText}}</view>
+    </view>
+  </view>
+</view>

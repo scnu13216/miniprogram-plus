@@ -1,0 +1,15 @@
+/* components/demoComponent/demoComponent.wxss */
+.button {
+    padding: 8px 24px;
+    font-weight: 700;
+    font-size: 17px;
+    background: #07c160;
+    color: #fff;
+    border-radius: 10rpx;
+    width:fit-content;
+    margin : 0 auto 30rpx auto;
+  }
+  
+  .button-hover{
+    filter: brightness(1.05);
+  }

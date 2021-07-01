@@ -1,0 +1,6 @@
+<!--components/Switch/Switch.wxml-->
+<view class="switch {{status}} custom-class {{disabled? 'switch--disabled' : ''}}" style="{{style}}"
+  bind:tap="handle_click">
+  <view class="switch__node node-class">
+  </view>
+</view>

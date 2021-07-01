@@ -7,6 +7,10 @@
 
 npm run buid
 
+### demo
+
+用微信开发者工具导入选择小程序导入demo文件夹
+
 
 ## 扩展功能
 
@@ -35,7 +39,7 @@ Page({
     },
     // 自定义方法统一编写位置
     methods:{
-        handle_tap(data,e){
+        handle_tap(e,{data,detail}){
             console.log(`标签中所有 data-x 的值都在这里` ,data)
             console.log(`触发标签的原始事件` ,e)
         }
@@ -69,7 +73,12 @@ mixins 内部写法与页面对象一致即可
 
 6、监听组件抛出事件和执行方法 this._on('event',function(data)=>{})
 
-7、新增请求方法(支持promise) await this._axios.post({api,data,headers,dataType,callback,loading})
+7、新增请求方法(支持promise) await this.$axios.post({api,data,headers,dataType,callback,loading})
+
+8、支持全局的多语言切换 支持页面渲染
+this.$i18n.setLocal(language)
+页面上使用
+{{_t.key}}
 ```
 3、Component 组件写法与原生基本无异
 
@@ -86,7 +95,7 @@ mixins 内部写法与组件对象一致即可
 
 6、监听组件抛出事件和执行方法 this._on('event',function(data)=>{})
 
-7、新增请求方法(支持promise) await this._axios.post({api,data,headers,dataType,callback,loading})
+7、新增请求方法(支持promise) await this.$axios.post({api,data,headers,dataType,callback,loading})
 
 8、新增共享的全局属性 store
 使用方式：
@@ -163,7 +172,7 @@ new Haijack({store,axios})
 
 new Haijack({util})
 
-页面和组件都可以通过 this._util 调用工具库
+页面和组件都可以通过 this.$util 调用工具库
 
 5、如果有配置文件 config 
 

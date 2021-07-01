@@ -1,0 +1,10 @@
+<!--components/demoComponent/demoComponent.wxml-->
+
+<view class="button" hover-class="button-hover" bindtap="handle_changefoo">改变数据</view>
+<text>组件内数据 foo:{{foo}}</text>
+
+
+<view class="button" hover-class="button-hover" bindtap="handle_emit_event">抛出事件，并附带数据</view>
+<text>下面是组建内计算属性</text>
+<text>{{compute_foo}}</text>
+

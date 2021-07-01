@@ -17,9 +17,11 @@ let Store = {}
 let Axios = {}
 let Util = {}
 let Config = {}
+let I18n = {}
+let GlobalMixin = {}
 class haijack {
 
-    constructor({ store, axios, util, config }) {
+    constructor({ store, axios, util, config, i18n, globalMixin }) {
         // 初始化缺省标识
         Store = store || false
         Axios = axios || false
@@ -28,6 +30,11 @@ class haijack {
         }
         Util = Object.assign(_util, util)
         Config = config || false
+        I18n = i18n || false
+        if (I18n) {
+            I18n.component_stack = complex_stack
+        }
+        GlobalMixin = globalMixin || false
         HJ_Page(this)
         HJ_Component(this)
     }
@@ -95,6 +102,14 @@ function HJ_Page(haijack) {
 }
 
 async function page_inject_mixin(options) {
+    // 全局混入
+    if (GlobalMixin) {
+        if (options.hasOwnProperty('mixins')) {
+            options.unshift(GlobalMixin)
+        } else {
+            options.mixins = [GlobalMixin]
+        }
+    }
     // 扩展mixins属性 混入属性对象 data ， methods， computed，watch 。钩子函数在后面执行
     if (options.hasOwnProperty('mixins')) {
         let data = {};
@@ -129,8 +144,11 @@ async function page_inject_methods(options) {
             // 这个认为是标签触发的事件
             if (arg.length == 1 && arg[0].hasOwnProperty('type')) {
                 origin_func.call(this,
-                    arg[0].currentTarget.dataset,
-                    arg[0]
+                    arg[0],
+                    {
+                        data: arg[0].currentTarget.dataset,
+                        detail: arg[0].detail
+                    }
                 );
             }
             // 除了标签触发的事件就是自定义方法，或者是自定义事件
@@ -183,7 +201,7 @@ async function page_haijack_onLoad(options) {
 
         // 开启数据监听
         new dataProxy(this.data, (link, n, o) => {
-            options.watch[link] && options.watch[link](n, o);
+            options.watch && options.watch[link] && options.watch[link](n, o);
             // 触发计算属性方法
             if (options.computed_obj.hasOwnProperty(link)) {
                 options.computed_obj[link].forEach(v => {
@@ -285,10 +303,12 @@ async function page_haijack_onShareAppMessage(options) {
     let origian_onShareAppMessage = options.onShareAppMessage
     options.onShareAppMessage = async function () {
         // mixins 执行周期函数使用同步顺序执行
+        let shareInfo = {}
         for (let i = 0; i < options.mixins.length; i++) {
-            options.mixins[i].onShareAppMessage && await options.mixins[i].onShareAppMessage.call(this)
+            options.mixins[i].onShareAppMessage && (shareInfo = await options.mixins[i].onShareAppMessage.call(this))
         }
-        return origian_onShareAppMessage && origian_onShareAppMessage.call(this)
+        origian_onShareAppMessage && (shareInfo = await origian_onShareAppMessage.call(this))
+        return shareInfo
     }
 }
 
@@ -296,10 +316,12 @@ async function page_haijack_onShareTimeline(options) {
     let origian_onShareTimeline = options.onShareTimeline
     options.onShareTimeline = async function () {
         // mixins 执行周期函数使用同步顺序执行
+        let shareInfo = {}
         for (let i = 0; i < options.mixins.length; i++) {
-            options.mixins[i].onShareTimeline && await options.mixins[i].onShareTimeline.call(this)
+            options.mixins[i].onShareTimeline && (shareInfo = await options.mixins[i].onShareTimeline.call(this))
         }
-        return origian_onShareTimeline && origian_onShareTimeline.call(this)
+        origian_onShareTimeline && (shareInfo = await origian_onShareTimeline.call(this))
+        return shareInfo
     }
 }
 
@@ -396,13 +418,37 @@ function whenComponentUseAsPage() {
 }
 
 async function component_inject_mixin(options) {
-    // 兼容mixins写法
-    if (options.hasOwnProperty('mixins')) {
-        // 缺省值填充
-        if (!options.behaviors) {
-            options.behaviors = []
+    // 全局混入
+    if (GlobalMixin) {
+        if (options.hasOwnProperty('mixins')) {
+            options.unshift(GlobalMixin)
+        } else {
+            options.mixins = [GlobalMixin]
         }
-        options.behaviors = options.behaviors.concat(behaviors)
+    }
+    // 扩展mixins属性 混入属性对象 data ， methods， computed，watch 。钩子函数在后面执行
+    if (options.hasOwnProperty('mixins')) {
+        let data = {};
+        let methods = {};
+        let computed = {};
+        let watch = {};
+        for (let i = 0; i < options.mixins.length; i++) {
+            Object.assign(data, options.mixins[i].data ? options.mixins[i].data : {});
+            Object.assign(methods, options.mixins[i].methods ? options.mixins[i].methods : {});
+            Object.assign(computed, options.mixins[i].computed ? options.mixins[i].computed : {});
+            Object.assign(watch, options.mixins[i].watch ? options.mixins[i].watch : {});
+        }
+
+        Object.assign(data, options.data)
+        Object.assign(methods, options.methods)
+        Object.assign(computed, options.computed)
+        Object.assign(watch, options.watch)
+        options.data = data
+        options.methods = methods
+        options.computed = computed
+        options.watch = watch
+    } else {
+        options.mixins = []
     }
 }
 
@@ -414,8 +460,11 @@ async function component_inject_methods(options) {
             // 这个认为是标签触发的事件
             if (arg.length == 1 && arg[0].hasOwnProperty('type')) {
                 origin_func.call(this,
-                    arg[0].currentTarget.dataset,
-                    arg[0]
+                    arg[0],
+                    {
+                        data: arg[0].currentTarget.dataset,
+                        detail: arg[0].detail
+                    }
                 );
             }
             // 除了标签触发的事件就是自定义方法，或者是自定义事件
@@ -469,7 +518,7 @@ async function component_haijack_attached(options) {
 
         // 扩展数据监听
         new dataProxy(this.data, (link, n, o) => {
-            options.watch[link] && options.watch[link](n, o);
+            options.watch && options.watch[link] && options.watch[link](n, o);
             // 触发计算属性方法
             if (options.computed_obj.hasOwnProperty(link)) {
                 options.computed_obj[link].forEach(v => {
@@ -505,10 +554,10 @@ async function component_haijack_detached(options) {
 /* 
     原型扩展
 
-    _on 监听直属下级组件抛出的事件 
+    $on 监听直属下级组件抛出的事件 
     使用方法 this._on(event_name,(data)=>{})
 
-    _emit 向直属上级组件（页面）抛出事件
+    $emit 向直属上级组件（页面）抛出事件
     使用方法 this._emit(event_name,data)
 
     _store 获取全局属性
@@ -523,15 +572,15 @@ async function component_haijack_detached(options) {
     $store 全局属性方法
     使用方法 this.$store.commit('set[Prototype]',value) 。 会触发页面渲染
 
-    _axios 请求
-    使用方法 await this._axios.post({api,data})
+    $axios 请求
+    使用方法 await this.$axios.post({api,data})
 
 
 */
 function extend_prototype() {
     // 保存当前开启的监听 会被子组件触发事件时调用
     this._lisentEventActive = {};
-    this._on = function (event_name, func) {
+    this.$on = function (event_name, func) {
         this._lisentEventActive[event_name] = func
     };
     if (this.type == 'page') {
@@ -543,15 +592,22 @@ function extend_prototype() {
         }
         if (Axios) {
             // 请求
-            this._axios = Axios
+            this.$axios = Axios
         }
         if (Config) {
             // 配置
             this._config = Config
         }
         // 工具方法
-        this._util = Util
+        this.$util = Util
 
+        if (I18n) {
+            // 国际化
+            this.$i18n = I18n
+            this.setData({
+                _t: I18n._t
+            })
+        }
     }
 
     if (this.type == 'component') {
@@ -563,17 +619,17 @@ function extend_prototype() {
         }
         if (Axios) {
             // 请求
-            this._axios = Axios
+            this.$axios = Axios
         }
         if (Config) {
             // 配置
             this._config = Config
         }
         // 工具方法
-        this._util = Util
+        this.$util = Util
 
         let parent = this.selectOwnerComponent();
-        this._emit = function (event_name, data) {
+        this.$emit = function (event_name, data) {
             if (parent._lisentEventActive.hasOwnProperty(event_name)) {
                 parent._lisentEventActive[event_name].call(parent, data);
             }

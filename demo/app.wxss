@@ -1,0 +1,50 @@
+/**app.wxss**/
+.button {
+  padding: 8px 24px;
+  font-weight: 700;
+  font-size: 17px;
+  background: #07c160;
+  color: #fff;
+  border-radius: 10rpx;
+  width:fit-content;
+  margin: 0 auto 30rpx auto;
+
+}
+
+view{
+  text-align: center;
+}
+
+.button-hover{
+  filter: brightness(1.05);
+}
+
+
+/* 单行 */
+.oneline {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 双行 */
+.twoline,
+.threeline {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    word-wrap: break-word;
+    word-break: break-all;
+    position: relative;
+    white-space: normal;
+}
+
+.twoline {
+    -webkit-line-clamp: 2;
+}
+
+/* 三行 */
+.threeline {
+    -webkit-line-clamp: 3;
+}

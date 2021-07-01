@@ -66,7 +66,7 @@ class Axios {
                 )
             )
         } else {
-            return
+            return false
         }
         let after_res = afterRequest.call(this, res)
         wx.hideLoading()
@@ -110,7 +110,7 @@ class Axios {
                 )
             )
         } else {
-            return
+            return false
         }
         let after_res = afterRequest.call(this, res)
         wx.hideLoading()
@@ -136,6 +136,14 @@ function beforeRequest({
         headers,
         timeout: _timeout,
         dataType,
+    }
+    if (!api) {
+        wx.showToast({
+            title: '接口配置异常',
+            icon: 'none'
+        });
+        console.warn(`接口配置异常： 没有传api进来！`)
+        return false
     }
     if (!api.match(/^http(s?):\/\//g)) {
         // 默认服务请求
