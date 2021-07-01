@@ -199,5 +199,51 @@ methods:{
 }
 
 ```
+6、全局mixin使用 globalMixin
+```
+const globalMixin = {
+    data:{
+        fromGlobalMixin:"哈哈 这也可以？！"
+    },
+    onLoad(){
+        // 如果你想做一些每个页面都执行的代码，写在这里感觉很合适
+
+        // 这里写的方法执行顺序最靠前
+    },
+    onShareAppMessage(){
+        // 如果你想每个页面的分享都有一个默认的内容，这样写也很不错
+        return {
+            title:"分享一刻",
+            path:"page/index/index",
+            imageUrl:"https://自己找一个张图吧！"
+        }
+    },
+}
+new Haijack({globalMixin})
+```
+
+顺便在这里解析一下mixin里面周期函数的执行顺序
+比方说有如下代码(且全局使用了globalMixin)
+
+```
+Page({
+    mixin:[mixinA,mixinB],
+    onLoad(){
+        console.log("onLoad from Page")
+    }
+})
+```
+
+其中 globalMixin , mixinA , mixinB , 里面都写了 onLoad 方法, 那么执行顺如如下
+
+```
+onLoad from globalMixin
+onLoad from mixinA
+onLoad from mixinB
+onLoad from Page
+```
+
+这个执行顺序能类推到其他声明周期函数
+
 
 
