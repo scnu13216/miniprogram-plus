@@ -164,9 +164,11 @@ async function page_inject_methods(options) {
 async function page_inject_computed(options) {
     // todo 扩展page的计算属性
     let computed_obj = {}
-    let value_reg = /(this.data.|this._store.)[\w|.]*/g
+    let value_reg = /(this.data.|this._store.)[\w|.|$]*/g
     Object.keys(options.computed).forEach(v => {
         let values = options.computed[v].toString().replace(/\s+/g, '').match(value_reg).map(v => v.replace(/(this.data.|this._store.)/, '').match(/\w+/)[0])
+
+
         values.forEach(_v => {
             // todo 判断计算属性中是否已有涉及属性
             if (!computed_obj.hasOwnProperty(_v)) {
@@ -399,7 +401,7 @@ function whenComponentUseAsPage() {
 
 }
 
-function whenComponentUseAsComponent() {
+function whenComponentUseAsComponent(options) {
     // todo 缺省值填充
     if (!options.hasOwnProperty('methods')) {
         options.methods = {}
@@ -417,6 +419,16 @@ function whenComponentUseAsComponent() {
         options.lifetimes.detached = function () { }
     }
 
+    // // todo 缺省值填充
+    // if (!options.hasOwnProperty('pageLifetimes')) {
+    //     options.pageLifetimes = {}
+    // }
+    // // todo 缺省值填充
+    // if (!options.pageLifetimes.hasOwnProperty('attached')) {
+    //     options.pageLifetimes.attached = function () { }
+    // }
+
+
     component_inject_mixin(options)
 
     component_inject_methods(options)
@@ -424,6 +436,8 @@ function whenComponentUseAsComponent() {
     component_inject_computed(options)
 
     component_haijack_attached(options)
+
+    // component_haijack_pageLife_attached(options)
 
     component_haijack_detached(options)
 }
@@ -490,11 +504,14 @@ async function component_inject_computed(options) {
     // todo 扩展page的计算属性
     let computed_obj = {}
     if (options.hasOwnProperty('computed')) {
-        let value_reg = /(this.data.|this._store.)[\w|.]*/g
+        let value_reg = /(this.data.|this._store.)[\w|.|\$]*/g
         Object.keys(options.computed).forEach(v => {
             // todo 垃圾小程序不支持数值试探语法
             let _match = options.computed[v].toString().replace(/\s+/g, '').match(value_reg) || []
-            let values = _match.map(v => v.replace(/(this.data.|this._store.)/, '').match(/\w+/)[0])
+            let values = _match.map(v => v.replace(/(this.data.|this._store.)/, '').match(/(\w|\$)+/)[0])
+            if (options.name == 'CourseVideo') {
+                console.log(values)
+            }
             values.forEach(_v => {
                 // todo 判断计算属性中是否已有涉及属性
                 if (!computed_obj.hasOwnProperty(_v)) {
@@ -502,7 +519,6 @@ async function component_inject_computed(options) {
                 }
                 computed_obj[_v].push(`_get_${v}`)
             })
-
             // todo 计算属性获取的方法载入 
             options.methods[`_get_${v}`] = Util.debounce(function () {
                 this.setData({
@@ -511,7 +527,6 @@ async function component_inject_computed(options) {
             }, 100)
         })
     }
-
     options.computed_obj = computed_obj
 }
 
@@ -528,6 +543,8 @@ async function component_haijack_attached(options) {
         this.type = 'component'
         extend_prototype.call(this)
 
+
+        console.log(this.data)
         // todo 扩展数据监听
         new dataProxy(this.data, (link, n, o) => {
             options.watch && options.watch[link] && options.watch[link](n, o);
@@ -558,6 +575,8 @@ async function component_haijack_attached(options) {
         origin_lifetimes_attached && origin_lifetimes_attached.call(this, ...args)
     }
 }
+
+
 
 async function component_haijack_detached(options) {
     let origin_detached = options.lifetimes.detached
@@ -657,6 +676,7 @@ function extend_prototype() {
 
 /* 劫持这个组件，并在符合条件的情况下把这个组件数据加入到父组件的对象中 */
 function pushComponentToRefs(options) {
+    console.log(options)
     if (!options.hasOwnProperty('name')) {
         return
     }

@@ -5,6 +5,9 @@ Proxy = new Proxy(Proxy, {
         //result是new Proxy()生成的原本的实例
         argumentsList[0] ? "" : argumentsList[0] = {}
         const result = new target(...argumentsList);
+        if(result[Symbol.toStringTag]){
+            return argumentsList[0];
+        }
         //获取原本实例reslut的类型
         const originToStringTag = Object.prototype.toString.call(result).slice(1, -1).split(' ')[1]
         //改写result的[Symbol.toStringTag]属性，加上被代理的标志

@@ -36,6 +36,13 @@ class i18n {
                 component.setData({
                     _t: Local[language]
                 })
+                if (component.hasOwnProperty('computed_obj')) {
+                    // 检查启用计算属性
+                    if (component.computed_obj.hasOwnProperty('_t')) {
+                        // 执行更新
+                        component[component.computed_obj._t]()
+                    }
+                }
             }
         }
     }, 100)

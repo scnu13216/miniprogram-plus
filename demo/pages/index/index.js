@@ -4,11 +4,12 @@ const index_mixins = require('./index_mixin.js');
 
 Page({
   data: {
-    foo: 'bar'
+    foo: 'bar',
+    helloType: 't1'
   },
   mixins: [index_mixins],
   onLoad() {
-    this._on('from_demo', (data) => {
+    this.$on('from_demo', (data) => {
       this.setData({
         foo: data.foo
       })
@@ -26,6 +27,9 @@ Page({
     },
     haha() {
       return this._store.haha
+    },
+    sayHello() {
+      return this.data._t[this.data.helloType]
     }
   },
 
@@ -79,6 +83,11 @@ Page({
     handle_run_component_func1() {
       // 不是很建议这样做
       this._refs.demoComponent.component_func1()
+    },
+    handle_changeHelloType(){
+      this.setData({
+        helloType:'t2'
+      })
     },
   },
 

@@ -1,3 +1,5 @@
 module.exports = {
-    home: "home"
+    home: "home",
+    t1: "hello",
+    t2: "hi"
 }

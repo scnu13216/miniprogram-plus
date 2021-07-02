@@ -15,6 +15,9 @@
   <view>多语言：{{_t.home}}</view>
   <text>\n</text>
 
+    <view class="button" hover-class="button-hover" bindtap="handle_changeHelloType">多语言计算属性</view>
+    <view>{{sayHello}}</view>
+
   <view class="button" hover-class="button-hover" bindtap="mixin_test">调用mixin里面的方法</view>
 
 
