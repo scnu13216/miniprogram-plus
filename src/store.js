@@ -22,7 +22,9 @@ class Store {
                     // 检查启用计算属性
                     if (component.computed_obj.hasOwnProperty(target_property)) {
                         // 执行更新
-                        component[component.computed_obj[target_property]]()
+                        component.computed_obj[target_property].forEach(v=>{
+                            component[v]()
+                        })
                     }
                 }
             }

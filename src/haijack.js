@@ -177,13 +177,11 @@ async function page_inject_computed(options) {
             computed_obj[_v].push(`_get_${v}`)
         })
 
-        // todo 计算属性获取的方法载入 现在要加入防抖处理 
-        // todo 设置的防抖时间是 100ms 防止setData 方法的调用次数太多
-        options[`_get_${v}`] = Util.debounce(function () {
+        options[`_get_${v}`] = function () {
             this.setData({
                 [v]: options.computed[v].call(this)
             })
-        }, 100)
+        }
     })
     options.computed_obj = computed_obj
 }
@@ -192,6 +190,7 @@ async function page_haijack_onLoad(options) {
     // todo 劫持 onload 方法。
     let origin_onLoad = options.onLoad
     options.onLoad = async function (...args) {
+
 
         // todo 在加载页面onload之前执行
         this.component_path = this.__wxExparserNodeId__ + "#";
@@ -232,9 +231,13 @@ async function page_haijack_onLoad(options) {
 async function page_haijack_onShow(options) {
     let origin_onShow = options.onShow
     options.onShow = async function (...args) {
+        // let systemInfo = wx.getSystemInfoSync()
+        // if (systemInfo == "devtools") {
+        //     // todo 在开发者工具下运行，把当前页面整个对象暴露出去，方便调用各种方法
+        //     wx.page = this
+        // }
         // todo 在开发者工具下运行，把当前页面整个对象暴露出去，方便调用各种方法
         wx.page = this
-
         // todo mixins 执行周期函数使用同步顺序执行
         for (let i = 0; i < options.mixins.length; i++) {
             options.mixins[i].onShow && await options.mixins[i].onShow.call(this)
@@ -509,9 +512,6 @@ async function component_inject_computed(options) {
             // todo 垃圾小程序不支持数值试探语法
             let _match = options.computed[v].toString().replace(/\s+/g, '').match(value_reg) || []
             let values = _match.map(v => v.replace(/(this.data.|this._store.)/, '').match(/(\w|\$)+/)[0])
-            if (options.name == 'CourseVideo') {
-                console.log(values)
-            }
             values.forEach(_v => {
                 // todo 判断计算属性中是否已有涉及属性
                 if (!computed_obj.hasOwnProperty(_v)) {
@@ -520,11 +520,11 @@ async function component_inject_computed(options) {
                 computed_obj[_v].push(`_get_${v}`)
             })
             // todo 计算属性获取的方法载入 
-            options.methods[`_get_${v}`] = Util.debounce(function () {
+            options.methods[`_get_${v}`] = function () {
                 this.setData({
                     [v]: options.computed[v].call(this)
                 })
-            }, 100)
+            }
         })
     }
     options.computed_obj = computed_obj
@@ -542,9 +542,6 @@ async function component_haijack_attached(options) {
         this.computed_obj = options.computed_obj
         this.type = 'component'
         extend_prototype.call(this)
-
-
-        console.log(this.data)
         // todo 扩展数据监听
         new dataProxy(this.data, (link, n, o) => {
             options.watch && options.watch[link] && options.watch[link](n, o);
@@ -583,6 +580,7 @@ async function component_haijack_detached(options) {
     options.lifetimes.detached = function () {
         // todo 释放栈
         delete complex_stack[this.component_path]
+        component_count[`component_${options.name}`] -- 
         origin_detached && origin_detached.call(this)
     }
 }
@@ -676,7 +674,6 @@ function extend_prototype() {
 
 /* 劫持这个组件，并在符合条件的情况下把这个组件数据加入到父组件的对象中 */
 function pushComponentToRefs(options) {
-    console.log(options)
     if (!options.hasOwnProperty('name')) {
         return
     }
@@ -686,7 +683,8 @@ function pushComponentToRefs(options) {
     let parent = this.selectOwnerComponent();
 
     // todo 记录组件个数
-    let component_count_key = 'component_' + options.name
+    // let component_count_key = `${parent.__wxExparserNodeId__}#component_${options.name}`
+    let component_count_key = `component_${options.name}`
 
     if (!component_count.hasOwnProperty(component_count_key)) {
         component_count[component_count_key] = 0
