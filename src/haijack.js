@@ -580,7 +580,7 @@ async function component_haijack_detached(options) {
     options.lifetimes.detached = function () {
         // todo 释放栈
         delete complex_stack[this.component_path]
-        component_count[`component_${options.name}`] -- 
+        component_count[this.component_count_key] -- 
         origin_detached && origin_detached.call(this)
     }
 }
@@ -681,10 +681,9 @@ function pushComponentToRefs(options) {
 
     // todo 获取父组件
     let parent = this.selectOwnerComponent();
-
     // todo 记录组件个数
-    // let component_count_key = `${parent.__wxExparserNodeId__}#component_${options.name}`
-    let component_count_key = `component_${options.name}`
+    let component_count_key = `${parent.__wxExparserNodeId__}#component_${options.name}`
+    this.component_count_key = component_count_key
 
     if (!component_count.hasOwnProperty(component_count_key)) {
         component_count[component_count_key] = 0
