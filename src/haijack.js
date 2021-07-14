@@ -166,10 +166,14 @@ async function page_inject_computed(options) {
     let computed_obj = {}
     let value_reg = /(this.data.|this._store.)[\w|.|$]*/g
     Object.keys(options.computed).forEach(v => {
+        if (options.data.hasOwnProperty(v)) {
+            console.warn(`有相同名字的属性 ${v},已在data中声明，无法用于计算属性`)
+            delete options.computed[v]
+            return
+        }
         let values = options.computed[v].toString().replace(/\s+/g, '').match(value_reg).map(v => v.replace(/(this.data.|this._store.)/, '').match(/\w+/)[0])
-
-
         values.forEach(_v => {
+
             // todo 判断计算属性中是否已有涉及属性
             if (!computed_obj.hasOwnProperty(_v)) {
                 computed_obj[_v] = []
@@ -200,6 +204,14 @@ async function page_haijack_onLoad(options) {
         this.type = "page"
         extend_prototype.call(this)
 
+
+        // todo 计算属性创建时机 在 数据监听之后
+        if (options.hasOwnProperty('computed')) {
+            Object.keys(options.computed).forEach(v => {
+                this[`_get_${v}`]();
+            })
+        }
+
         // todo 开启数据监听
         new dataProxy(this.data, (link, n, o) => {
             options.watch && options.watch[link] && options.watch[link](n, o);
@@ -210,12 +222,7 @@ async function page_haijack_onLoad(options) {
                 })
             }
         });
-        // todo 计算属性创建时机 在 数据监听之后
-        if (options.hasOwnProperty('computed')) {
-            Object.keys(options.computed).forEach(v => {
-                this[`_get_${v}`]();
-            })
-        }
+
 
         // todo mixins 执行周期函数使用同步顺序执行
         for (let i = 0; i < options.mixins.length; i++) {
@@ -580,7 +587,7 @@ async function component_haijack_detached(options) {
     options.lifetimes.detached = function () {
         // todo 释放栈
         delete complex_stack[this.component_path]
-        component_count[this.component_count_key] -- 
+        component_count[this.component_count_key]--
         origin_detached && origin_detached.call(this)
     }
 }
