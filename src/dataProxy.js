@@ -31,7 +31,7 @@ class dataProxy {
         if (!link) link = '';
         if (String(data).toLocaleLowerCase() === '[object object]') {
             for (let k in data) {
-                if (typeof data[k] === 'object') {
+                if (typeof data[k] === 'object' && data[k] != null && data[k] != undefined) {
                     this.defineObjectReactive(data, k, data[k], `${link}.${k}`);
                 } else {
                     // 只有根路径下的简单属性要这样监听
