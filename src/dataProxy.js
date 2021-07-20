@@ -5,7 +5,7 @@ Proxy = new Proxy(Proxy, {
         //result是new Proxy()生成的原本的实例
         argumentsList[0] ? "" : argumentsList[0] = {}
         const result = new target(...argumentsList);
-        if(result[Symbol.toStringTag]){
+        if (result[Symbol.toStringTag]) {
             return argumentsList[0];
         }
         //获取原本实例reslut的类型
@@ -29,7 +29,9 @@ class dataProxy {
 
     createProxy(data, link) {
         if (!link) link = '';
-        if (String(data).toLocaleLowerCase() === '[object object]') {
+        if (String(data).toLocaleLowerCase() === '[object object]' && !data.proxy) {
+            // 记录当前对象已被proxy代理，防止死循环
+            data.proxy = true
             for (let k in data) {
                 if (typeof data[k] === 'object' && data[k] != null && data[k] != undefined) {
                     this.defineObjectReactive(data, k, data[k], `${link}.${k}`);

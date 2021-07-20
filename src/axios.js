@@ -60,7 +60,12 @@ class Axios {
             return false
         }
         let after_res = afterRequest.call(this, res, config)
-        wx.hideLoading()
+        try {
+            wx.hideLoading()
+        } catch (error) {
+
+        }
+
         if (typeof callback == 'function') {
             callback(after_res)
         }
@@ -97,7 +102,11 @@ class Axios {
             return false
         }
         let after_res = afterRequest.call(this, res, config)
-        wx.hideLoading()
+        try {
+            wx.hideLoading()
+        } catch (error) {
+
+        }
         if (typeof callback == 'function') {
             callback(after_res)
         }
@@ -114,7 +123,7 @@ function beforeRequest({
     dataType
 }) {
 
-   
+
     if (!api) {
         wx.showToast({
             title: '接口配置异常',
@@ -126,7 +135,7 @@ function beforeRequest({
     if (!data || typeof data != 'object') {
         data = {}
     }
-    if(!header || typeof header != 'object'){
+    if (!header || typeof header != 'object') {
         header = {}
     }
     let config = {
@@ -169,7 +178,7 @@ function beforeRequest({
     }
 
 
-   
+
 
     if (typeof this.interceptors.request == 'function') {
         // 执行前处理
@@ -212,7 +221,11 @@ function post(config) {
             },
             fail: (e) => {
                 // 网络不通
-                wx.hideLoading()
+                try {
+                    wx.hideLoading()
+                } catch (error) {
+
+                }
                 wx.showToast({ title: '客官别急，网络掉线了！' });
                 reject()
             }
@@ -231,7 +244,11 @@ function get(config) {
             },
             fail: (e) => {
                 console.error(e)
-                wx.hideLoading()
+                try {
+                    wx.hideLoading()
+                } catch (error) {
+
+                }
                 reject()
             }
         })
