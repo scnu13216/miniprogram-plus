@@ -64,7 +64,11 @@ function HJ_Page(haijack) {
             options.watch = {}
         }
 
+
+
         page_inject_mixin(options)
+
+        page_inject_watch(options)
 
         page_inject_methods(options)
 
@@ -98,6 +102,29 @@ function HJ_Page(haijack) {
 
         // todo 释放原生 Page 函数
         originPage(options)
+    }
+}
+
+function page_inject_watch(options) {
+    if (!options.hasOwnProperty('watch')) {
+        return
+    }
+    options.deepWatchName = []
+    for (let k in options.watch) {
+        if (typeof options.watch[k] == 'object') {
+            if (typeof options.watch[k].handler == 'function') {
+                options.watch[k] = options.watch[k].handler
+                options.deepWatchName.push(k)
+            } else {
+                delete options.watch[k]
+            }
+        }
+        else if (typeof options.watch[k] == 'function') {
+
+        }
+        else {
+            delete options.watch[k]
+        }
     }
 }
 
@@ -214,7 +241,18 @@ async function page_haijack_onLoad(options) {
 
         // todo 开启数据监听
         new dataProxy(this.data, (link, n, o) => {
-            options.watch && options.watch[link] && options.watch[link](n, o);
+            // todo 触发监听方法
+            if (options.watch) {
+                if (options.deepWatchName.length > 0) {
+                    // 查找那些深度监听的方法名
+                    for (let i = 0; i < options.deepWatchName.length; i++) {
+                        if (link.match(`^${options.deepWatchName[i]}`)) {
+                            options.watch[options.deepWatchName[i]]()
+                        }
+                    }
+                }
+                options.watch[link](n, o)
+            }
             // todo 触发计算属性方法
             if (options.computed_obj.hasOwnProperty(link)) {
                 options.computed_obj[link].forEach(v => {

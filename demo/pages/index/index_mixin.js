@@ -10,17 +10,17 @@ module.exports = {
     },
     watch: {
         "foo": function (n, o) {
-          wx.showToast({
-            icon: 'none',
-            title: `监听到页面数据 foo: ${o} => ${n}`,
-          })
+            wx.showToast({
+                icon: 'none',
+                title: `监听到页面数据 foo: ${o} => ${n}`,
+            })
         }
-      },
+    },
     computed: {
         mixin_comfun: function () {
-            if(this.data.fromMixin == 222){
+            if (this.data.fromMixin == 222) {
                 return "222_mixin"
-            }else{
+            } else {
                 return "222"
             }
         }

@@ -5,7 +5,14 @@ const index_mixins = require('./index_mixin.js');
 Page({
   data: {
     foo: 'bar',
-    helloType: 't1'
+    helloType: 't1',
+    obj: {
+      a: {
+        b: 123
+      },
+      c: 456
+    },
+    arr: [0, 1, 2],
   },
   mixins: [index_mixins],
   onLoad() {
@@ -16,6 +23,27 @@ Page({
     })
   },
   onShow() {
+  },
+  watch: {
+    // 'obj'(n, o) {
+    //   console.log('obj 更新了 ', n)
+    // },
+    'obj': {
+      handler(n, o) {
+        console.log('obj 更新了 ')
+      },
+      deep: true
+    },
+    'foo2': 123,
+    'abc': {
+      deep: false,
+    },
+    'obj.a.b'(n, o) {
+      console.log('obj.a.b 更新了 ', n)
+    },
+    'arr'(n, o) {
+      console.log('arr 更新了')
+    }
   },
   computed: {
     compute_foo: function () {
@@ -35,11 +63,24 @@ Page({
 
   methods: {
     async handle_change_data() {
-      let userInfo = await wx.getUserProfile({
-        lang: 'zh_CN',
-        desc: '用于在界面展示用户头像和昵称'
+      // let userInfo = await wx.getUserProfile({
+      //   lang: 'zh_CN',
+      //   desc: '用于在界面展示用户头像和昵称'
+      // })
+      // console.log(userInfo)
+      // this.setData({
+      //   [`obj.a.b`]: 123123
+      // })
+      this.setData({
+        [`arr[0]`]: [4, 5, 6]
       })
-      console.log(userInfo)
+      // this.setData({
+      //   [`obj`]: { c: 23333 }
+      // })
+      // this.data.obj = {
+      //   a:12312
+      // }
+      // this.data.obj.a.b = 22222
     },
     handle_get_event_data(e, { data }) {
       wx.showToast({
@@ -84,9 +125,9 @@ Page({
       // 不是很建议这样做
       this._refs.demoComponent.component_func1()
     },
-    handle_changeHelloType(){
+    handle_changeHelloType() {
       this.setData({
-        helloType:'t2'
+        helloType: 't2'
       })
     },
   },

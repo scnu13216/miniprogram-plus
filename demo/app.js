@@ -14,8 +14,8 @@ App({
 })
 
 const local = require('./local/index.js')
-require('./haijack.js')
-// require('./src/main.js')
+// require('./haijack.js')
+require('./src/main.js')
 const haijack = wx.haijack
 const Store = wx.Store
 const Axios = wx.Axios
