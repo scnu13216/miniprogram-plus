@@ -2,6 +2,7 @@
 <view class="container">
   <view class="button" hover-class="button-hover" bindtap="handle_changefoo">修改foo</view>
   <view class="button" hover-class="button-hover" bindtap="handle_change_data">修改页面的数据</view>
+  <view class="button" hover-class="button-hover" bindtap="handle_change_data2">修改页面的数据</view>
   <view>页面的数据 obj.a.b :{{obj.a.b}}</view>
   <text>\n</text>
   <view>计算属性 compute_foo：{{compute_foo}}</view>

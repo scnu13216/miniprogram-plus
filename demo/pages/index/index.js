@@ -10,15 +10,20 @@ Page({
       a: {
         b: 123
       },
-      c: 456
+      c: 456,
+      d: [1, 2, 3]
     },
-    arr: [0, 1, 2],
+    arr: [],
   },
   mixins: [index_mixins],
   onLoad() {
+    this.setData({
+      arr: [2,3]
+    })
     this.$on('from_demo', (data) => {
       this.setData({
-        foo: data.foo
+        foo: data.foo,
+        arr: [1, 2, 3]
       })
     })
   },
@@ -30,7 +35,7 @@ Page({
     // },
     'obj': {
       handler(n, o) {
-        console.log('obj 更新了 ')
+        console.log('obj 更新了 ',n,o)
       },
       deep: true
     },
@@ -39,10 +44,19 @@ Page({
       deep: false,
     },
     'obj.a.b'(n, o) {
+      // 支持
       console.log('obj.a.b 更新了 ', n)
     },
+    'obj.d[0][0]'(n, o) {
+      // 支持
+      console.log('obj.d[0][0] 更新了 ', n)
+    },
     'arr'(n, o) {
+      // 支持
       console.log('arr 更新了')
+    },
+    'arr[0]'(n, o) {
+      console.log('arr[0] 更新了')
     }
   },
   computed: {
@@ -71,8 +85,11 @@ Page({
       // this.setData({
       //   [`obj.a.b`]: 123123
       // })
+      // this.setData({
+      //   [`arr`]: [4, 5, 6]
+      // })
       this.setData({
-        [`arr[0]`]: [4, 5, 6]
+        [`obj.d[0]`]: [4, 5, 6]
       })
       // this.setData({
       //   [`obj`]: { c: 23333 }
@@ -81,6 +98,11 @@ Page({
       //   a:12312
       // }
       // this.data.obj.a.b = 22222
+    },
+    async handle_change_data2() {
+      this.setData({
+        [`obj.d[0][0]`]: [4, 5, 6]
+      })
     },
     handle_get_event_data(e, { data }) {
       wx.showToast({

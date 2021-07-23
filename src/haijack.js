@@ -246,12 +246,34 @@ async function page_haijack_onLoad(options) {
                 if (options.deepWatchName.length > 0) {
                     // 查找那些深度监听的方法名
                     for (let i = 0; i < options.deepWatchName.length; i++) {
-                        if (link.match(`^${options.deepWatchName[i]}`)) {
-                            options.watch[options.deepWatchName[i]]()
+                        if (link.match(`^${options.deepWatchName[i]}.(.|\\[)`)) {
+                            // ! 下一步要做 eval  eval(`this.data.${link}`) 获取指定对象的子属性
+                            let new_value_link = link.replace(/\[/g, '.').replace(/\]/g, '').split('.')
+                            let deep_obj_link = options.deepWatchName[i].replace(/\[/g, '.').replace(/\]/g).split('.')
+                            // ! new_value_link 是肯定比 deep_obj_link 要更深的
+                            let deep_obj_new_value = this.data
+
+                            deep_obj_link.forEach(v => {
+                                deep_obj_new_value = deep_obj_new_value[v]
+                            })
+
+                            let deep_obj_old_value = JSON.parse(JSON.stringify(deep_obj_new_value))
+
+                            deep_obj_old_value = getDeepOldValue(deep_obj_old_value, deep_obj_link.length, new_value_link)
+                            function getDeepOldValue(p, i, link) {
+                                // 到最后一层了 返回旧值
+                                if (link.length == i) {
+                                    return o
+                                } else {
+                                    p[new_value_link[i]] = getDeepOldValue(p[new_value_link[i]], i + 1, link)
+                                }
+                                return p
+                            }
+                            options.watch[options.deepWatchName[i]].call(this, deep_obj_new_value, deep_obj_old_value)
                         }
                     }
                 }
-                options.watch[link](n, o)
+                options.watch[link] && options.watch[link].call(this, n, o)
             }
             // todo 触发计算属性方法
             if (options.computed_obj.hasOwnProperty(link)) {
@@ -260,6 +282,16 @@ async function page_haijack_onLoad(options) {
                 })
             }
         });
+
+        // 由于数据监听0号是监听不到的，特意执行一次数组的赋值操作
+        for (let k in this.data) {
+            if (isType(this.data[k]) == 'array') {
+                this.setData({
+                    [k]: this.data[k]
+                })
+            }
+        }
+
 
 
         // todo mixins 执行周期函数使用同步顺序执行
@@ -779,6 +811,22 @@ function pushComponentToRefs(options) {
     component_count[component_count_key]++
 }
 
+const isType = obj => {
+    var toString = Object.prototype.toString;
+    var map = {
+        '[object Boolean]': 'boolean',
+        '[object Number]': 'number',
+        '[object String]': 'string',
+        '[object Function]': 'function',
+        '[object Array]': 'array',
+        '[object Date]': 'date',
+        '[object RegExp]': 'regExp',
+        '[object Undefined]': 'undefined',
+        '[object Null]': 'null',
+        '[object Object]': 'object'
+    };
+    return map[toString.call(obj)];
+};
 
 
 module.exports = haijack
