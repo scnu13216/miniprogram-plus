@@ -19,13 +19,84 @@ class Axios {
         // 允许注入请求前后处理
         let interceptors = {
             request: {
-                use: (func) => {
-                    interceptors.request = func
+                use: (intercept) => {
+                    let getHostReg = /[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?/;
+                    if (typeof intercept == 'function') {
+                        // 单一前处理拦截，不会对系统外请求做处理
+                        interceptors.request = (config) => {
+                            let defaultHost = getHostReg.exec(_baseUrl)[0]
+                            let requestHost = getHostReg.exec(config.url)[0]
+                            if (defaultHost == requestHost) {
+                                return intercept(config)
+                            } else {
+                                return config
+                            }
+                        }
+                    } else if (typeof intercept == 'object') {
+                        // 格式化 host 键 
+                        let _intercept = {}
+                        for (const key in intercept) {
+                            let host = getHostReg.exec(key)[0]
+                            _intercept[host] = intercept[key]
+                        }
+                        interceptors.request = (config) => {
+                            let host = getHostReg.exec(config.url)[0]
+                            if (_intercept.hasOwnProperty(host)) {
+                                if (typeof _intercept[host] == 'function') {
+                                    try {
+                                        return _intercept[host](config)
+                                    }
+                                    catch (error) {
+                                        console.error("前处理出错了  自己检查一下", error)
+                                        return config
+                                    }
+                                }
+                            } else {
+                                return config
+                            }
+                        }
+                    }
                 }
             },
             response: {
-                use: (func) => {
-                    interceptors.response = func
+                use: (intercept) => {
+                    let getHostReg = /[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?/;
+                    if (typeof intercept == 'function') {
+                        // 单一后处理拦截，不会对系统外请求做处理
+                        interceptors.response = (res, config) => {
+                            let defaultHost = getHostReg.exec(_baseUrl)[0]
+                            let responseHost = getHostReg.exec(config.url)[0]
+                            if (defaultHost == responseHost) {
+                                return intercept(res)
+                            }
+                            else {
+                                return res
+                            }
+                        }
+                    } else {
+                        // 格式化 host 键 
+                        let _intercept = {}
+                        for (const key in intercept) {
+                            let host = getHostReg.exec(key)[0]
+                            _intercept[host] = intercept[key]
+                        }
+                        interceptors.response = (res, config) => {
+                            let host = getHostReg.exec(config.url)[0]
+                            if (_intercept.hasOwnProperty(host)) {
+                                if (typeof _intercept[host] == 'function') {
+                                    try {
+                                        return _intercept[host](res)
+                                    } catch (error) {
+                                        console.log(error)
+                                        return res
+                                    }
+                                }
+                            }
+                            else {
+                                return res
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -122,8 +193,6 @@ function beforeRequest({
     header,
     dataType
 }) {
-
-
     if (!api) {
         wx.showToast({
             title: '接口配置异常',
@@ -182,7 +251,13 @@ function beforeRequest({
 
     if (typeof this.interceptors.request == 'function') {
         // 执行前处理
-        config = this.interceptors.request(config)
+        if (this.isExLink) {
+            // 域外不会进行头部处理
+            null
+        } else {
+            config = this.interceptors.request(config)
+        }
+
     }
 
     config.header = {
@@ -195,11 +270,7 @@ function beforeRequest({
 function afterRequest(res, config) {
     if (typeof this.interceptors.response == 'function') {
         // 如果是指定其他链接就不执行交易后处理
-        if (config.isExLink) {
-            return res
-        } else {
-            res = this.interceptors.response(res)
-        }
+        res = this.interceptors.response(res, config)
     }
     return res
 }
