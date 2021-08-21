@@ -246,4 +246,70 @@ onLoad from Page
 这个执行顺序能类推到其他声明周期函数
 
 
+axios 拦截器
+
+前拦截 
+注意：只对 axios 初始化时 baseUrl 的请求域名进行处理
+
+```
+axios.interceptors.request.use((config)=>{
+    config.header ...
+    config.data ....
+    return config
+})
+```
+
+后拦截 
+注意： 只对 axios 初始化时 baseUrl 的请求域名进行处理
+
+```
+axios.interceptors.response.use((res) => {
+    res.code ...
+    res.data ...
+    return res
+})
+```
+
+强化拦截
+
+强化拦截规则
+
+对 abc.eft.com 的接口服务进行拦截
+
+匹配成功 :  `http://abc.eft.com`
+匹配成功 :  `https://abc.eft.com`
+匹配成功 :  `https://abc.eft.com/abc`
+
+前拦截
+
+```
+axios.interceptors.request.use({
+    `${baseUrl}`:(config)=>{
+        ...
+    },
+    `${otherHostA}`:(config)=>{
+        ...
+    },
+    `${otherHostB}`:(config)=>{
+        ...
+    }
+})
+```
+
+
+后拦截
+
+```
+axios.interceptors.response.use({
+    `${baseUrl}`:(res)=>{
+        ...
+    },
+    `${otherHostA}`:(res)=>{
+        ...
+    },
+    `${otherHostB}`:(res)=>{
+        ...
+    }
+})
+```
 
