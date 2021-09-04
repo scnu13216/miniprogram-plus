@@ -35,12 +35,35 @@ class haijack {
             I18n.component_stack = complex_stack
         }
         GlobalMixin = globalMixin || false
+        HJ_App(this)
         HJ_Page(this)
         HJ_Component(this)
     }
     getComplex_stack() {
         return complex_stack
     }
+}
+
+function HJ_App(haijack) {
+    const app = getApp()
+    if (Store) {
+        // todo _store 用于取值
+        app._store = Store.getters || {}
+        // todo $store 用于运算
+        app.$store = Store
+    }
+    if (Axios) {
+        // todo 请求
+        app.$axios = Axios
+    }
+    if (Config) {
+        // todo 配置
+        app._config = Config
+    }
+    // todo 工具方法
+    app.$util = Util
+
+    return true
 }
 
 
