@@ -2,6 +2,7 @@ let _baseUrl = ""
 let _apiMap = {}
 let _header = {}
 let _timeout = 5000
+let _ignoreCode = [200]
 
 
 class Axios {
@@ -10,12 +11,14 @@ class Axios {
         baseUrl,
         timeout,
         header,
-        apiMap
+        apiMap,
+        ignoreCode,
     }) {
         _baseUrl = baseUrl || _baseUrl
         _header = header || _header
         _timeout = timeout || _timeout
         _apiMap = apiMap || _apiMap
+        _ignoreCode = ignoreCode || _ignoreCode
         // 允许注入请求前后处理
         let interceptors = {
             request: {
@@ -282,11 +285,12 @@ function post(config) {
             method: 'POST',
 
             success: (res) => {
-                if (res.statusCode != 200) {
+                if (!_ignoreCode.includes(res.statusCode)) {
+                    // 服务异常
                     wx.showToast({ title: '客官别急，网络掉线了！' });
                     reject()
                 } else {
-                    // 服务异常
+
                     resolve(res.data)
                 }
             },

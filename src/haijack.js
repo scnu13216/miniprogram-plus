@@ -44,7 +44,7 @@ class haijack {
     }
 }
 
-function HJ_App(haijack) {
+function HJ_App() {
     const app = getApp()
     if (Store) {
         // todo _store 用于取值
