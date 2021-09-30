@@ -644,7 +644,7 @@ async function component_haijack_attached(options) {
         extend_prototype.call(this)
         // todo 扩展数据监听
         new dataProxy(this.data, (link, n, o) => {
-            options.watch && options.watch[link] && options.watch[link](n, o);
+            options.watch && options.watch[link] && options.watch[link].call(this,n, o);
             // todo 触发计算属性方法
             if (options.computed_obj.hasOwnProperty(link)) {
                 options.computed_obj[link].forEach(v => {
