@@ -644,7 +644,7 @@ async function component_haijack_attached(options) {
         extend_prototype.call(this)
         // todo 扩展数据监听
         new dataProxy(this.data, (link, n, o) => {
-            options.watch && options.watch[link] && options.watch[link].call(this,n, o);
+            options.watch && options.watch[link] && options.watch[link].call(this, n, o);
             // todo 触发计算属性方法
             if (options.computed_obj.hasOwnProperty(link)) {
                 options.computed_obj[link].forEach(v => {
@@ -678,9 +678,17 @@ async function component_haijack_attached(options) {
 async function component_haijack_detached(options) {
     let origin_detached = options.lifetimes.detached
     options.lifetimes.detached = function () {
+
+        // todo 释放父组件数据视图
+        // todo 获取父组件
+        removeComponentFromRefs.call(this, options)
+
+
         // todo 释放栈
         delete complex_stack[this.component_path]
         component_count[this.component_count_key]--
+
+
         origin_detached && origin_detached.call(this)
     }
 }
@@ -790,6 +798,7 @@ function pushComponentToRefs(options) {
     }
     // todo 下一级会用到
     this.component_path = `${component_count_key}${this.__wxExparserNodeId__}#`
+    this.data._com_id = this.component_path
 
 
     if (!parent.hasOwnProperty('_refs')) {
@@ -812,14 +821,14 @@ function pushComponentToRefs(options) {
         // todo this._refs.[component_name][index] 访问第几个组件
         if (component_count[component_count_key] == 1) {
             parent.setData({
-                [`com_data.${options.name}`]: [parent._refs[options.name].data, this.data]
+                [`_com_data.${options.name}`]: [parent._refs[options.name].data, this.data]
             })
             parent._refs[options.name] = [parent._refs[options.name], this];
         } else {
             parent._refs[options.name].push(this);
-            parent.data.com_data[options.name].push(this.data)
+            parent.data._com_data[options.name].push(this.data)
             parent.setData({
-                [`com_data.${options.name}`]: parent.data.com_data[options.name]
+                [`_com_data.${options.name}`]: parent.data._com_data[options.name]
             })
         }
     } else {
@@ -827,11 +836,46 @@ function pushComponentToRefs(options) {
         parent._refs[options.name] = this
 
         parent.setData({
-            [`com_data.${options.name}`]: this.data
+            [`_com_data.${options.name}`]: this.data
         })
     }
     // todo 记录个数
     component_count[component_count_key]++
+}
+
+function removeComponentFromRefs(options) {
+    if (!options.hasOwnProperty('name')) {
+        return
+    }
+    // todo 获取父组件
+    let parent = this.selectOwnerComponent();
+    if (component_count[this.component_count_key] == 1) {
+        // 只有一个组件
+        delete parent._refs[options.name]
+        parent.setData({
+            [`_com_data.${options.name}`]: undefined
+        })
+    }
+    else if (component_count[this.component_count_key] > 1) {
+
+        let component_index_0 = parent._refs[options.name].findIndex(v => { return v._com_id == this.data._com_id })
+        parent._refs[options.name].splice(component_index_0, 1)
+        if (parent._refs[options.name].length == 1) {
+            parent._refs[options.name] = parent._refs[options.name][0]
+        }
+
+        let component_index_1 = parent.data._com_data[options.name].findIndex(v => { return v._com_id == this.data._com_id })
+        parent.data._com_data[options.name].splice(component_index_1, 1)
+        if(parent.data._com_data[options.name].length == 1){
+            parent.data._com_data[options.name] =  parent.data._com_data[options.name][0]
+        }
+
+
+        parent.setData({
+            [`_com_data.${options.name}`]: parent.data._com_data[options.name]
+        })
+    }
+
 }
 
 const isType = obj => {
