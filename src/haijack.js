@@ -192,8 +192,8 @@ async function page_inject_methods(options) {
         let origin_func = options.methods[v]
         options.methods[v] = function (...arg) {
             // todo 这个认为是标签触发的事件
-            if (arg.length == 1 && arg[0].hasOwnProperty('type')) {
-                origin_func.call(this,
+            if (arg.length == 1 && arg[0] && arg[0].hasOwnProperty('type')) {
+                return origin_func.call(this,
                     arg[0],
                     {
                         data: arg[0].currentTarget.dataset,
@@ -203,7 +203,7 @@ async function page_inject_methods(options) {
             }
             // todo 除了标签触发的事件就是自定义方法，或者是自定义事件
             else {
-                origin_func.call(this, ...arg)
+                return origin_func.call(this, ...arg)
             }
         }
     })
@@ -586,8 +586,8 @@ async function component_inject_methods(options) {
         let origin_func = options.methods[v]
         options.methods[v] = function (...arg) {
             // todo 这个认为是标签触发的事件
-            if (arg.length == 1 && arg[0].hasOwnProperty('type')) {
-                origin_func.call(this,
+            if (arg.length == 1 && arg[0] && arg[0].hasOwnProperty('type')) {
+                return origin_func.call(this,
                     arg[0],
                     {
                         data: arg[0].currentTarget.dataset,
@@ -597,7 +597,7 @@ async function component_inject_methods(options) {
             }
             // todo 除了标签触发的事件就是自定义方法，或者是自定义事件
             else {
-                origin_func.call(this, ...arg)
+                return origin_func.call(this, ...arg)
             }
         }
     })
@@ -866,8 +866,8 @@ function removeComponentFromRefs(options) {
 
         let component_index_1 = parent.data._com_data[options.name].findIndex(v => { return v._com_id == this.data._com_id })
         parent.data._com_data[options.name].splice(component_index_1, 1)
-        if(parent.data._com_data[options.name].length == 1){
-            parent.data._com_data[options.name] =  parent.data._com_data[options.name][0]
+        if (parent.data._com_data[options.name].length == 1) {
+            parent.data._com_data[options.name] = parent.data._com_data[options.name][0]
         }
 
 
