@@ -222,6 +222,7 @@ async function page_inject_computed(options) {
             return
         }
         let values = options.computed[v].toString().replace(/\s+/g, '').match(value_reg).map(v => v.replace(/(this.data.|this._store.)/, '').match(/\w+/)[0])
+        if(values)
         values.forEach(_v => {
 
             // todo 判断计算属性中是否已有涉及属性
@@ -418,16 +419,20 @@ async function page_haijack_onShareAppMessage(options) {
 }
 
 async function page_haijack_onShareTimeline(options) {
-    let origian_onShareTimeline = options.onShareTimeline
-    options.onShareTimeline = async function () {
-        // todo mixins 执行周期函数使用同步顺序执行
-        let shareInfo = {}
-        for (let i = 0; i < options.mixins.length; i++) {
-            options.mixins[i].onShareTimeline && (shareInfo = await options.mixins[i].onShareTimeline.call(this))
+    if (options.onShareTimeline) {
+        // 除非用户自己要触发分享朋友圈
+        let origian_onShareTimeline = options.onShareTimeline
+        options.onShareTimeline = async function () {
+            // todo mixins 执行周期函数使用同步顺序执行
+            let shareInfo = {}
+            for (let i = 0; i < options.mixins.length; i++) {
+                options.mixins[i].onShareTimeline && (shareInfo = await options.mixins[i].onShareTimeline.call(this))
+            }
+            origian_onShareTimeline && (shareInfo = await origian_onShareTimeline.call(this))
+            return shareInfo
         }
-        origian_onShareTimeline && (shareInfo = await origian_onShareTimeline.call(this))
-        return shareInfo
     }
+
 }
 
 async function page_haijack_onAddToFavorites(options) {
