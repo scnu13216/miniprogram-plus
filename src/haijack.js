@@ -222,15 +222,15 @@ async function page_inject_computed(options) {
             return
         }
         let values = options.computed[v].toString().replace(/\s+/g, '').match(value_reg).map(v => v.replace(/(this.data.|this._store.)/, '').match(/\w+/)[0])
-        if(values)
-        values.forEach(_v => {
+        if (values)
+            values.forEach(_v => {
 
-            // todo 判断计算属性中是否已有涉及属性
-            if (!computed_obj.hasOwnProperty(_v)) {
-                computed_obj[_v] = []
-            }
-            computed_obj[_v].push(`_get_${v}`)
-        })
+                // todo 判断计算属性中是否已有涉及属性
+                if (!computed_obj.hasOwnProperty(_v)) {
+                    computed_obj[_v] = []
+                }
+                computed_obj[_v].push(`_get_${v}`)
+            })
 
         options[`_get_${v}`] = function () {
             this.setData({
@@ -351,10 +351,12 @@ async function page_haijack_onHide(options) {
     let origian_onHide = options.onHide
     options.onHide = async function () {
         // todo mixins 执行周期函数使用同步顺序执行
-        for (let i = 0; i < options.mixins.length; i++) {
+
+        origian_onHide && origian_onHide.call(this)
+
+        for (let i = options.mixins.length - 1; i > -1; i--) {
             options.mixins[i].onHide && await options.mixins[i].onHide.call(this)
         }
-        origian_onHide && origian_onHide.call(this)
     }
 }
 
@@ -364,11 +366,11 @@ async function page_haijack_onUnload(options) {
         // todo 释放栈
         delete complex_stack[this.component_path]
 
-        // todo mixins 执行周期函数使用同步顺序执行
-        for (let i = 0; i < options.mixins.length; i++) {
-            options.mixins[i].onShow && await options.mixins[i].onShow.call(this)
-        }
         origian_onUnload && origian_onUnload.call(this)
+        // todo mixins 执行周期函数使用同步顺序执行
+        for (let i = options.mixins.length - 1; i > -1; i--) {
+            options.mixins[i].onUnload && await options.mixins[i].onUnload.call(this)
+        }
     }
 }
 
@@ -419,7 +421,7 @@ async function page_haijack_onShareAppMessage(options) {
 }
 
 async function page_haijack_onShareTimeline(options) {
-    if (options.onShareTimeline) {
+    if ("onShareTimeline" in options) {
         // 除非用户自己要触发分享朋友圈
         let origian_onShareTimeline = options.onShareTimeline
         options.onShareTimeline = async function () {

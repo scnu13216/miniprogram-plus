@@ -44,7 +44,12 @@ function throttle(fn, gap) {
 wx.throttle = throttle
 wx.debounce = debounce
 
+
+// let el = await this.$util.querySelector('#id').rect().context().fields().node().scrollOffset().exec()
+// let el = await this.$util.querySelectorAll('.class').rect().context().fields().node().scrollOffset().exec()
+
+
 module.exports = {
     debounce,
-    throttle
+    throttle,
 }

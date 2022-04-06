@@ -1,5 +1,6 @@
 // 代理 <-- 代理类
-Proxy = new Proxy(Proxy, {
+// 为了减少对底层的破坏
+const proxyMyProxy = new Proxy(Proxy, {
     //拦截 new 操作符，生成 Proxy 实例的时候来拦截
     construct: function (target, argumentsList) {
         //result是new Proxy()生成的原本的实例
@@ -66,7 +67,7 @@ class dataProxy {
         // 递归
         link = link.replace(/^\./g, '');
         this.createProxy(value, `${link}`);
-        obj[key] = new Proxy(value, {
+        obj[key] = new proxyMyProxy(value, {
             set: (target, property, val, receiver) => {
                 // 获取旧数据
 
