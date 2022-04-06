@@ -221,17 +221,16 @@ async function page_inject_computed(options) {
             delete options.computed[v]
             return
         }
-        let values = options.computed[v].toString().replace(/\s+/g, '').match(value_reg).map(v => v.replace(/(this.data.|this._store.)/, '').match(/\w+/)[0])
-        if (values)
+        let values = (options.computed[v].toString().replace(/\s+/g, '').match(value_reg) || []).map(v => v.replace(/(this.data.|this._store.)/, '').match(/\w+/)[0])
+        if (values.length) {
             values.forEach(_v => {
-
                 // todo 判断计算属性中是否已有涉及属性
                 if (!computed_obj.hasOwnProperty(_v)) {
                     computed_obj[_v] = []
                 }
                 computed_obj[_v].push(`_get_${v}`)
             })
-
+        }
         options[`_get_${v}`] = function () {
             this.setData({
                 [v]: options.computed[v].call(this)
@@ -619,13 +618,15 @@ async function component_inject_computed(options) {
             // todo 垃圾小程序不支持数值试探语法
             let _match = options.computed[v].toString().replace(/\s+/g, '').match(value_reg) || []
             let values = _match.map(v => v.replace(/(this.data.|this._store.)/, '').match(/(\w|\$)+/)[0])
-            values.forEach(_v => {
-                // todo 判断计算属性中是否已有涉及属性
-                if (!computed_obj.hasOwnProperty(_v)) {
-                    computed_obj[_v] = []
-                }
-                computed_obj[_v].push(`_get_${v}`)
-            })
+            if (values.length) {
+                values.forEach(_v => {
+                    // todo 判断计算属性中是否已有涉及属性
+                    if (!computed_obj.hasOwnProperty(_v)) {
+                        computed_obj[_v] = []
+                    }
+                    computed_obj[_v].push(`_get_${v}`)
+                })
+            }
             // todo 计算属性获取的方法载入 
             options.methods[`_get_${v}`] = function () {
                 this.setData({
