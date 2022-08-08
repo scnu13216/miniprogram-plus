@@ -10,6 +10,8 @@
   "author": "lwf",
   "license": "ISC",
   "dependencies": {
+    "is": "^3.3.0",
+    "miniprogram-computed": "^4.4.0",
     "webpack": "^5.37.1",
     "webpack-cli": "^4.7.0"
   }
