@@ -79,6 +79,7 @@ function HJ_Page(haijack) {
         if (is.fn(MyOptions.data)) {
             MyOptions.data = MyOptions.data();
         }
+        MyOptions.data._store = {}
         // 字段映射
         mapKeys(MyOptions, options, {
             data: "data", // data
@@ -102,6 +103,8 @@ function HJ_Page(haijack) {
         proxyMethods(MyOptions.methods, options);
         // 检查是否使用了`computed`或者`watch`字段
         proxyComputedAndWatch(MyOptions, options);
+        // 监听 component/watch 里面是否使用了 store 的变量
+        proxyForStore(MyOptions, options)
         // 重写`onLoad`生命周期函数，将页面地址的查询参数挂载到`this.$query`上
         proxyOnLoad(MyOptions, options);
         // 重写`onUnload`生命周期函数
@@ -125,6 +128,10 @@ function proxyOnLoad(MyOptions, options) {
         // 挂载额外的功能
         this.type = "page"
         extend_prototype.call(this)
+        // store 数据挂载
+        this.setData({
+            _store: this._store
+        })
         if (is.fn(origin_onLoad)) {
             // 执行原有的onLoad函数
             origin_onLoad.call(this, query);
@@ -151,9 +158,29 @@ function HJ_Component(haijack) {
 }
 
 // 为涉及到store的computed变量添加一些属性
-function proxyComputedForStore(){
-
+function proxyForStore(MyOptions, options) {
+    let value_reg = /(data._store.)[\w|.|$]*/g
+    let store_computed_obj = {}
+    if (options.hasOwnProperty('component')) {
+        // 监听属性
+        for (const key in options.component) {
+            if (Object.hasOwnProperty.call(options.component, key)) {
+                let values = (options.component[key].toString().replace(/\s+/g, '').match(value_reg) || []).map(v => v.replace(/(data._store.)/, '').match(/\w+/)[0])
+                if (values.length) {
+                    values.forEach(v => {
+                        // todo 判断计算属性中是否已有涉及属性
+                        if (!store_computed_obj.hasOwnProperty(v)) {
+                            store_computed_obj[v] = []
+                        }
+                        store_computed_obj[v].push(key)
+                    })
+                }
+            }
+        }
+    }
+    options.store_computed_obj = store_computed_obj
 }
+
 
 function mapKeys(fromTarget, toTarget, map) {
     Object.keys(map).forEach((key) => {
