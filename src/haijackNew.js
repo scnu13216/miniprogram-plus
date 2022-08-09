@@ -1,9 +1,10 @@
 const _util = require('./util')
 
-import is from './is'
+const is = require('is')
 
-import { behavior as computedBehavior } from "miniprogram-computed";
+const miniprogramComputed = require('miniprogram-computed')
 
+const computedBehavior = miniprogramComputed.behavior
 
 // todo 源 page 对象
 const originPage = Page
@@ -71,23 +72,31 @@ function HJ_App() {
 // todo 给 page 添加更多的方法
 function HJ_Page(haijack) {
     // todo options 是创建页面后写的page内代码
-    Page = (options) => {
-
+    console.log("HJ_page")
+    Page = (MyOptions) => {
+        let options = {};
         // 检查`data`字段是否为函数
-        if (is.function(MyOptions.data)) {
+        if (is.fn(MyOptions.data)) {
             MyOptions.data = MyOptions.data();
         }
         // 字段映射
         mapKeys(MyOptions, options, {
-            data: "data",
+            data: "data", // data
+            onLoad: "onLoad", // create
+            onReady: "onReady", // mounted
+            onShow: "onShow", // activated
+            behaviors: "behaviors", // mixins
+            computed: "computed", // computed
+            watch: "watch", // watch
+            onHide: "onHide", // deactivated
+            onUnload: "onUnload", // destroy
+            // 此部分是原生的
             onReachBottom: "onReachBottom",
-            onShow: "onShow",
-            mounted: "onReady",
-            created: "onLoad",
-            mixins: "behaviors",
-            computed: "computed",
-            watch: "watch",
-            destroyed: "onUnload",
+            onShareAppMessage: "onShareAppMessage",
+            onShareTimeline: "onShareTimeline",
+            onAddToFavorites: "onAddToFavorites",
+            onPageScroll: "onPageScroll",
+            onResize: "onResize",
         });
         // 扁平methods字段中的数据
         proxyMethods(MyOptions.methods, options);
@@ -97,47 +106,53 @@ function HJ_Page(haijack) {
         proxyOnLoad(MyOptions, options);
         // 重写`onUnload`生命周期函数
         proxyOnUnload(MyOptions, options);
-
         originPage(options);
-
-
-
     }
 
-    function proxyOnLoad(MyOptions, options) {
-        // 保存原有的onLoad函数
-        const origin_onLoad = options.onLoad;
-        options.onLoad = function (query) {
-            // todo 在加载页面onload之前执行
-            this.component_path = this.__wxExparserNodeId__ + "#";
-            // todo 载入栈
-            complex_stack[this.component_path] = this;
-            // 挂载查询参数
-            this.$query = query;
-            // 挂载额外的功能
-            this.type = "page"
-            extend_prototype.call(this)
-            if (is.function(origin_onLoad)) {
-                // 执行原有的onLoad函数
-                origin_onLoad.call(this, query);
-            }
-        };
-    }
 
-    function proxyOnUnload(MyOptions, options) {
-        // 保存原有的onLoad函数
-        const origin_onUnLoad = options.onUnload;
-        options.onUnload = function () {
+}
 
-            // todo 释放栈
-            delete complex_stack[this.component_path]
+function proxyOnLoad(MyOptions, options) {
+    // 保存原有的onLoad函数
+    let origin_onLoad = options.onLoad;
+    options.onLoad = function (query) {
+        // todo 在加载页面onload之前执行
+        this.component_path = this.__wxExparserNodeId__ + "#";
+        // todo 载入栈
+        complex_stack[this.component_path] = this;
+        // 挂载查询参数
+        this.$query = query;
+        // 挂载额外的功能
+        this.type = "page"
+        extend_prototype.call(this)
+        if (is.fn(origin_onLoad)) {
+            // 执行原有的onLoad函数
+            origin_onLoad.call(this, query);
+        }
+    };
+}
 
-            if (is.function(origin_onUnLoad)) {
-                // 执行原有的onLoad函数
-                origin_onLoad.call(this, query);
-            }
+function proxyOnUnload(MyOptions, options) {
+    // 保存原有的onLoad函数
+    const origin_onUnLoad = options.onUnload;
+    options.onUnload = function () {
+        // todo 释放栈
+        delete complex_stack[this.component_path]
+        if (is.fn(origin_onUnLoad)) {
+            // 执行原有的onLoad函数
+            origin_onLoad.call(this, query);
         }
     }
+}
+
+// todo 给 component 添加更多的方法
+function HJ_Component(haijack) {
+
+}
+
+// 为涉及到store的computed变量添加一些属性
+function proxyComputedForStore(){
+
 }
 
 function mapKeys(fromTarget, toTarget, map) {
