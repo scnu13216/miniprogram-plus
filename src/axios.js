@@ -187,6 +187,54 @@ class Axios {
         return after_res
     }
 
+
+    uploadFile = async function ({
+        api,
+        data,
+        header,
+        name = 'file',
+        callback,
+        loading = true
+    }) {
+        let before_res = beforeRequest.call(this, {
+            api,
+            data,
+            header,
+            name
+        })
+        let res = {}
+        let config = { data, header, name, callback }
+        if (before_res) {
+            if (loading) {
+                wx.showLoading({
+                    title: '加载中',
+                    mask: true
+                });
+            }
+            config = { data, header, name, callback, ...before_res, formData: before_res.data }
+            await uploadFile(config)
+        } else {
+            return false
+        }
+        let after_res = afterRequest.call(this, res, config)
+        try {
+            wx.hideLoading()
+        } catch (error) {
+
+        }
+        if (typeof callback == 'function') {
+            callback(after_res)
+        }
+        return after_res
+    }
+
+    requestAll = function () {
+        if (!apis instanceof Array) {
+            throw new Error("你的组合请求不是一个数组")
+        }
+        return new Promise.all(apis)
+    }
+
 }
 
 
@@ -194,7 +242,8 @@ function beforeRequest({
     api,
     data,
     header,
-    dataType
+    dataType,
+    name
 }) {
     if (!api) {
         wx.showToast({
@@ -216,6 +265,7 @@ function beforeRequest({
         header,
         timeout: _timeout,
         dataType,
+        name
     }
     if (!api.match(/^http(s?):\/\//g)) {
         // 默认服务请求
@@ -313,6 +363,28 @@ function get(config) {
         wx.request({
             ...config,
             method: 'GET',
+            timeout: _timeout,
+            success: (res) => {
+                resolve(res.data)
+            },
+            fail: (e) => {
+                console.error(e)
+                try {
+                    wx.hideLoading()
+                } catch (error) {
+
+                }
+                reject()
+            }
+        })
+    })
+}
+
+
+function uploadFile(config) {
+    return new Promise((resolve, reject) => {
+        wx.uploadFile({
+            ...config,
             timeout: _timeout,
             success: (res) => {
                 resolve(res.data)

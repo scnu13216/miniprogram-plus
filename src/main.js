@@ -1,5 +1,5 @@
 
-const haijack = require('./haijackNew')
+const haijack = require('./haijack')
 const Axios = require('./axios')
 const Store = require('./store')
 const I18n = require('./i18n')
