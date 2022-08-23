@@ -4,7 +4,7 @@ const index_mixins = require('./index_mixin.js');
 
 Page({
   data: {
-    foo: 'bar',
+    foo: '你好呀1',
     helloType: 't1',
     obj: {
       a: {
@@ -13,13 +13,14 @@ Page({
       c: 456,
       d: [1, 2, 3]
     },
-    arr: [],
+    arr: [0],
   },
   mixins: [index_mixins],
   onLoad() {
-    this.setData({
-      arr: [2,3]
-    })
+    // this.setData({
+    //   arr: [2,3]
+    // })
+    console.log(this)
     this.$on('from_demo', (data) => {
       this.setData({
         foo: data.foo,
@@ -30,6 +31,9 @@ Page({
   onShow() {
   },
   watch: {
+    helloType(n,o){
+        console.log("helloType watch",n)  
+    },
     // 'obj'(n, o) {
     //   console.log('obj 更新了 ', n)
     // },
@@ -56,7 +60,15 @@ Page({
       console.log('arr 更新了')
     },
     'arr[0]'(n, o) {
-      console.log('arr[0] 更新了')
+        // 支持 但是前提是data里面的 arr 变量原始值已存在 0 号值
+      console.log('arr[0] 更新了',n)
+    },
+    compute_foo(n,o){
+        // 支持 监听 componentd 生成的变量 
+        console.log("watch compute_foo",n)
+    },
+    haha(n){
+        console.log("watch haha ",n)
     }
   },
   computed: {
@@ -85,12 +97,12 @@ Page({
       // this.setData({
       //   [`obj.a.b`]: 123123
       // })
-      // this.setData({
-      //   [`arr`]: [4, 5, 6]
-      // })
       this.setData({
-        [`obj.d[0]`]: [4, 5, 6]
+        ['arr[0]']: 2
       })
+    //   this.setData({
+    //     [`obj.d[0]`]: [4, 5, 6]
+    //   })
       // this.setData({
       //   [`obj`]: { c: 23333 }
       // })
@@ -98,6 +110,12 @@ Page({
       //   a:12312
       // }
       // this.data.obj.a.b = 22222
+
+    //   this.setData({
+    //     helloType:{
+    //         a:new Date().getTime()
+    //     }
+    //   })
     },
     async handle_change_data2() {
       this.setData({
@@ -122,7 +140,7 @@ Page({
       this.$store.commit('setHaha', '123hhhh 123123')
     },
     async handle_doRequest() {
-      let res = await this._axios.get({
+      let res = await this.$axios.get({
         api: "https://tcc.taobao.com/cc/json/mobile_tel_segment.htm",
         headers: {
           'content-type': 'application/javascript;charset=GBK'

@@ -143,7 +143,7 @@ function page_inject_watch(options) {
             }
         }
         else if (typeof options.watch[k] == 'function') {
-
+            // 是一个方法就行 不管了
         }
         else {
             delete options.watch[k]
@@ -492,8 +492,8 @@ function HJ_Component() {
 
         // ! component 可以直接进做为页面写，微信是开放了这个权限。not good！
         if (options.mode == 'page') {
-            whenComponentUseAsPage(options)
-            originComponent(options)
+            // whenComponentUseAsPage(options)
+            // originComponent(options)
             return
         }
         else {
@@ -519,23 +519,47 @@ function whenComponentUseAsComponent(options) {
     if (!options.hasOwnProperty('lifetimes')) {
         options.lifetimes = {}
     }
-    // todo 缺省值填充
+    // todo 缺省值填充 在组件实例刚刚被创建时执行
+    if (!options.lifetimes.hasOwnProperty('created')) {
+        options.lifetimes.created = function () { }
+    }
+    // todo 缺省值填充 在组件实例进入页面节点树时执行
     if (!options.lifetimes.hasOwnProperty('attached')) {
         options.lifetimes.attached = function () { }
+    }
+    // todo 缺省值填充 在组件在视图层布局完成后执行
+    if (!options.lifetimes.hasOwnProperty('ready')) {
+        options.lifetimes.ready = function () { }
+    }
+    // todo 缺省值填充 moved
+    if (!options.lifetimes.hasOwnProperty('moved')) {
+        options.lifetimes.moved = function () { }
     }
     // todo 缺省值填充
     if (!options.lifetimes.hasOwnProperty('detached')) {
         options.lifetimes.detached = function () { }
     }
+    // todo 缺省值填充
+    if (!options.lifetimes.hasOwnProperty('error')) {
+        options.lifetimes.error = function () { }
+    }
 
-    // // todo 缺省值填充
-    // if (!options.hasOwnProperty('pageLifetimes')) {
-    //     options.pageLifetimes = {}
-    // }
-    // // todo 缺省值填充
-    // if (!options.pageLifetimes.hasOwnProperty('attached')) {
-    //     options.pageLifetimes.attached = function () { }
-    // }
+    // todo 缺省值填充
+    if (!options.hasOwnProperty('pageLifetimes')) {
+        options.pageLifetimes = {}
+    }
+    // todo 缺省值填充 组件所在的页面被展示时执行
+    if (!options.pageLifetimes.hasOwnProperty('show')) {
+        options.pageLifetimes.show = function () { }
+    }
+    // todo 缺省值填充 组件所在的页面被隐藏时执行
+    if (!options.pageLifetimes.hasOwnProperty('hide')) {
+        options.pageLifetimes.hide = function () { }
+    }
+    // todo 缺省值填充 组件所在的页面尺寸变化时执行
+    if (!options.pageLifetimes.hasOwnProperty('resize')) {
+        options.pageLifetimes.resize = function () { }
+    }
 
 
     component_inject_mixin(options)
@@ -685,7 +709,7 @@ async function component_haijack_attached(options) {
 
 async function component_haijack_detached(options) {
     let origin_detached = options.lifetimes.detached
-    options.lifetimes.detached = function () {
+    options.lifetimes.detached = async function () {
 
         // todo 释放父组件数据视图
         // todo 获取父组件
@@ -696,8 +720,13 @@ async function component_haijack_detached(options) {
         delete complex_stack[this.component_path]
         component_count[this.component_count_key]--
 
-
         origin_detached && origin_detached.call(this)
+
+        // todo mixins 执行周期函数使用同步顺序执行
+        // ! 注： component 里面的 lifetimes.detached 视为等价于 page 里面的 onUnload
+        for (let i = 0; i < options.mixins.length; i++) {
+            options.mixins[i].onUnload && await options.mixins[i].onUnload.call(this, ...args)
+        }
     }
 }
 

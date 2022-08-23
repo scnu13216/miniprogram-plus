@@ -27,7 +27,7 @@ class Axios {
                     if (typeof intercept == 'function') {
                         // 单一前处理拦截，不会对系统外请求做处理
                         interceptors.request = (config) => {
-                            let defaultHost = getHostReg.exec(_baseUrl)[0]
+                            let defaultHost = _baseUrl ? getHostReg.exec(_baseUrl)[0] : ""
                             let requestHost = getHostReg.exec(config.url)[0]
                             if (defaultHost == requestHost) {
                                 return intercept(config)
@@ -67,7 +67,7 @@ class Axios {
                     if (typeof intercept == 'function') {
                         // 单一后处理拦截，不会对系统外请求做处理
                         interceptors.response = (res, config) => {
-                            let defaultHost = getHostReg.exec(_baseUrl)[0]
+                            let defaultHost = _baseUrl ? getHostReg.exec(_baseUrl)[0] : ""
                             let responseHost = getHostReg.exec(config.url)[0]
                             if (defaultHost == responseHost) {
                                 return intercept(res)
@@ -232,7 +232,7 @@ class Axios {
         if (!apis instanceof Array) {
             throw new Error("你的组合请求不是一个数组")
         }
-        return new Promise.all(apis)
+        return Promise.all(apis)
     }
 
 }

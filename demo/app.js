@@ -21,7 +21,7 @@ const Store = wx.Store
 const Axios = wx.Axios
 const I18n = wx.I18n
 // 全局仓库
-const store = new Store()
+const store = new Store({ignoreKey : []})
 
 // 多语言支持
 const i18n = new I18n(local)

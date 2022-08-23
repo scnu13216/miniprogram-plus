@@ -36,6 +36,24 @@ Page({
             console.log(`新设置的值 ${n}`)
             console.log(`原来的值 ${o}`)
         }
+    /*  
+    重要说明！！ 
+    原则是 options.data 的初始状态的值是可以触发监听，可支持深度。
+    但是值的类型发生变化，或值从无到有，则无法监听。
+    监听支持：
+    data下简单类型变量： boolean ，string ，number 
+    data下object类型变量 
+    支持 obj
+    支持 obj.a
+    支持 obj.a.b
+    支持 obj.d[0]
+    ...(符合原则的监听都可以)
+    data下array类型变量 :
+    支持 arr 但是前提是 this.setData({arr: otherList})
+    支持 arr[x] 但是前提是data里面的 arr 变量原始值已存在 x 号值
+
+    支持 computed的计算属性
+    */
     },
     // 自定义方法统一编写位置
     methods:{

@@ -4,9 +4,15 @@ const app = getApp()
 class Store {
     getters
     component_stack
-    constructor() {
+    ignoreKey
+    constructor({
+        ignoreKey = []
+    }) {
         this.component_stack = {}
         this.getters = app.store.getters
+        this.ignoreKey = ignoreKey
+        // 支持缓存，是同层的
+        syncStorage(ignoreKey)
         autoStore()
     }
 
@@ -15,6 +21,10 @@ class Store {
     commit(key, value) {
         if (app.store.mutations.hasOwnProperty(key)) {
             let target_property = app.store.mutations[key](value);
+            // 注意处理被忽略的
+            if (!this.ignoreKey.includes(target_property)) {
+                wx.setStorageSync(target_property, value)
+            }
             // 更新仓库之后，检查 component_stack 里面被检查出与仓库数据有关的计算属性
             for (const key in this.component_stack) {
                 const component = this.component_stack[key]
@@ -40,6 +50,8 @@ class Store {
             console.error(error)
         }
     }
+
+
 }
 
 function autoStore() {
@@ -59,6 +71,24 @@ function autoStore() {
             }
         }
     }
+}
+
+function syncStorage(ignoreKey) {
+    let {
+        keys: storageKeys
+    } = wx.getStorageInfoSync()
+    let storeKeys = Object.keys(app.store.state) || []
+    storeKeys.forEach(v => {
+        if (ignoreKey.includes(v)) {
+            wx.removeStorageSync(v)
+        } else {
+            if (storageKeys.includes(v)) {
+                app.store.state[v] = wx.getStorageSync(v)
+            }else{
+                wx.setStorageSync(v, app.store.state[v])
+            }
+        }
+    })
 }
 
 /* 
