@@ -28,10 +28,11 @@ class Axios {
                     let getHostReg = /[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?/;
                     if (typeof intercept == 'function') {
                         // 单一前处理拦截，不会对系统外请求做处理
+                        // 如果没有设置 baseurl 那么全部请求都会进前处理
                         interceptors.request = (config) => {
                             let defaultHost = _baseUrl ? getHostReg.exec(_baseUrl)[0] : ""
                             let requestHost = getHostReg.exec(config.url)[0]
-                            if (defaultHost == requestHost) {
+                            if ((defaultHost!= '' && defaultHost == requestHost) || defaultHost == '') {
                                 return intercept(config)
                             } else {
                                 return config
@@ -67,10 +68,11 @@ class Axios {
                     let getHostReg = /[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?/;
                     if (typeof intercept == 'function') {
                         // 单一后处理拦截，不会对系统外请求做处理
+                        // 如果没有设置 baseurl 那么全部请求都会进后处理
                         interceptors.response = (res, config) => {
                             let defaultHost = _baseUrl ? getHostReg.exec(_baseUrl)[0] : ""
                             let responseHost = getHostReg.exec(config.url)[0]
-                            if (defaultHost == responseHost) {
+                            if ((defaultHost!= '' && defaultHost == requestHost) || defaultHost == '') {
                                 return intercept(res)
                             } else {
                                 return res
