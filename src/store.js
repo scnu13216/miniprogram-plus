@@ -59,7 +59,16 @@ function autoStore() {
         let getter_key = key
         if (!app.store.getters.hasOwnProperty(getter_key)) {
             app.store.getters[getter_key] = ((state) => {
-                return state[key]
+                if (typeof state[key] == 'object') {
+                    try {
+                        return JSON.parse(JSON.stringify(state[key]))
+                    } catch (error) {
+                        return state[key]
+                    }
+                } else {
+                    return state[key]
+                }
+
             })(app.store.state)
         }
         let mutation_key = `set${String(key).firstUpperCase()}`
@@ -84,7 +93,7 @@ function syncStorage(ignoreKey) {
         } else {
             if (storageKeys.includes(v)) {
                 app.store.state[v] = wx.getStorageSync(v)
-            }else{
+            } else {
                 wx.setStorageSync(v, app.store.state[v])
             }
         }

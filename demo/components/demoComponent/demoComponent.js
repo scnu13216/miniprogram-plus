@@ -48,7 +48,7 @@ Component({
             })
         },
         handle_emit_event() {
-            this._emit('from_demo', {
+            this.$emit('from_demo', {
                 foo: this.data.foo
             })
         },

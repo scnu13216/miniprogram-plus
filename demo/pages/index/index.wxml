@@ -27,4 +27,6 @@
   <view class="button" hover-class="button-hover" bindtap="handle_doRequest">发起请求</view>
 
   <demoComponent></demoComponent>
+  <view class="button" hover-class="button-hover" bindtap="handle_onEmit">开启监听</view>
+  <view class="button" hover-class="button-hover" bindtap="handle_offEmit">取消监听</view>
 </view>

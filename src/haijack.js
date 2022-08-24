@@ -244,7 +244,7 @@ async function page_haijack_onLoad(options) {
     // todo 劫持 onload 方法。
     let origin_onLoad = options.onLoad
     options.onLoad = async function (...args) {
-
+        this._query = args[0] || {}
 
         // todo 在加载页面onload之前执行
         this.component_path = this.__wxExparserNodeId__ + "#";
@@ -253,7 +253,7 @@ async function page_haijack_onLoad(options) {
 
         this.type = "page"
         extend_prototype.call(this)
-
+        
 
         // todo 计算属性创建时机 在 数据监听之后
         if (options.hasOwnProperty('computed')) {
@@ -761,8 +761,12 @@ function extend_prototype() {
     // todo 保存当前开启的监听 会被子组件触发事件时调用
     this._lisentEventActive = {};
     this.$on = function (event_name, func) {
+        console.log(func)
         this._lisentEventActive[event_name] = func
     };
+    this.$off = function (event_name,func){
+
+    }
     if (this.type == 'page') {
         if (Store) {
             // todo _store 用于取值

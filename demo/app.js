@@ -14,8 +14,8 @@ App({
 })
 
 const local = require('./local/index.js')
-// require('./haijack.js')
-require('./src/main.js')
+require('./haijack.js')
+// require('./src/main.js')
 const haijack = wx.haijack
 const Store = wx.Store
 const Axios = wx.Axios
@@ -41,7 +41,8 @@ axios.interceptors.response.use(res => {
 // 支持扩展工具方法
 const util = require('./utils/util.js')
 
-wx.haijack = new haijack({
+// 全局启用扩展脚本
+new haijack({
   store,
   axios,
   util,

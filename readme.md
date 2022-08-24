@@ -14,10 +14,10 @@ npm run buid
 
 ## 扩展功能
 
-1、Page 页面编写新规范
+1、Page 页面编写新增规范
 
 ```
-// Page 页面编写新规范
+// Page 页面编写新增规范
 Page({
     // 代码混入
     mixins:[page_mixin],
@@ -55,7 +55,7 @@ Page({
     支持 computed的计算属性
     */
     },
-    // 自定义方法统一编写位置
+    // 自定义方法统一编写位置,不想用也可以把方法写在外面，但是后面的扩展参数就没有了
     methods:{
         handle_tap(e,{data,detail}){
             console.log(`标签中所有 data-x 的值都在这里` ,data)
@@ -74,7 +74,7 @@ Component({
     name:"component_name"
 })
 
-可以通过对象 this.data.com_data 对象链访问对应组件的内部值 但是不推荐
+可以通过对象 this.data._com_data['component_name'] 对象链访问对应组件的内部值 但是不推荐
 
 2、新增共享的全局属性 store
 使用方式：
@@ -97,6 +97,8 @@ mixins 内部写法与页面对象一致即可
 this.$i18n.setLocal(language)
 页面上使用
 {{_t.key}}
+
+9、this._query 可以在当前页面的任何位置获取 onLoad 的传入值
 ```
 3、Component 组件写法与原生基本无异
 
@@ -117,9 +119,31 @@ mixins 内部写法与组件对象一致即可
 
 8、新增共享的全局属性 store
 使用方式：
-this._store.key
-this.$store.commit('key',value)
+this._store.key // 静态对象，直接修改不会影响到全局state的值
+this.$store.commit('key',value) // 必须通过 commit 修改state的值
 tips:全局属性用于页面渲染，可以配合 computed 完成。
+js:
+computed:{
+    key:{
+        return this._store.key
+    }
+}
+wxml:
+<text>{{key}}</text>
+
+tips:如果需要监听_store的值改变，可以配合 computed 完成
+js:
+computed:{
+    key:{
+        return this._store.key
+    }
+}
+watch:{
+    key(n,o){
+        console.log("watch store state key chagne",n)
+    }
+}
+
 ```
 
 
@@ -154,6 +178,11 @@ App({
   }
 })
 ```
+
+state里面的属性可以存储到 Storage 里面。
+
+如果不需要存储，则可以通过 new Store({ignoreKey = ['key']}) 来忽略存储
+
 
 2、请求
 

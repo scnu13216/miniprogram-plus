@@ -17,17 +17,12 @@ Page({
         arr: [0],
     },
     mixins: [index_mixins],
-    onLoad() {
+    onLoad(...arg) {
         // this.setData({
         //   arr: [2,3]
         // })
+        console.log(arg)
         console.log(this)
-        this.$on('from_demo', (data) => {
-            this.setData({
-                foo: data.foo,
-                arr: [1, 2, 3]
-            })
-        })
     },
     onShow() {},
     watch: {
@@ -68,6 +63,7 @@ Page({
             console.log("watch compute_foo", n)
         },
         haha(n) {
+            // 通过 computed 监听store.state的变化
             console.log("watch haha ", n)
         }
     },
@@ -188,6 +184,12 @@ Page({
                 helloType: 't2'
             })
         },
+        handle_onEmit(){
+            this.$on('from_demo',this.handle_event_from_demo)
+        },
+        handle_offEmit(){
+            this.$off('from_demo',this.handle_event_from_demo)
+        }
     },
 
 
