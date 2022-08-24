@@ -3,7 +3,7 @@ let _apiMap = {}
 let _header = {}
 let _timeout = 5000
 let _ignoreCode = [200]
-
+let _debug = false
 
 class Axios {
 
@@ -13,12 +13,14 @@ class Axios {
         header,
         apiMap,
         ignoreCode,
+        debug
     }) {
         _baseUrl = baseUrl || _baseUrl
         _header = header || _header
         _timeout = timeout || _timeout
         _apiMap = apiMap || _apiMap
         _ignoreCode = ignoreCode || _ignoreCode
+        _debug = Boolean(debug)
         // 允许注入请求前后处理
         let interceptors = {
             request: {
@@ -48,8 +50,7 @@ class Axios {
                                 if (typeof _intercept[host] == 'function') {
                                     try {
                                         return _intercept[host](config)
-                                    }
-                                    catch (error) {
+                                    } catch (error) {
                                         console.error("前处理出错了  自己检查一下", error)
                                         return config
                                     }
@@ -71,8 +72,7 @@ class Axios {
                             let responseHost = getHostReg.exec(config.url)[0]
                             if (defaultHost == responseHost) {
                                 return intercept(res)
-                            }
-                            else {
+                            } else {
                                 return res
                             }
                         }
@@ -94,8 +94,7 @@ class Axios {
                                         return res
                                     }
                                 }
-                            }
-                            else {
+                            } else {
                                 return res
                             }
                         }
@@ -120,7 +119,12 @@ class Axios {
             header
         })
         let res = {}
-        let config = { data, header, dataType, callback }
+        let config = {
+            data,
+            header,
+            dataType,
+            callback
+        }
         if (before_res) {
             if (loading) {
                 wx.showLoading({
@@ -128,8 +132,24 @@ class Axios {
                     mask: true
                 });
             }
-            config = { data, header, dataType, callback, ...before_res }
+            config = {
+                data,
+                header,
+                dataType,
+                callback,
+                ...before_res
+            }
+            if (_debug) {
+                console.info(`${config.url}`)
+                console.info(`↓↓↓↓↓↓↓ request begin ↓↓↓↓↓↓↓`)
+                console.info(config)
+            }
             res = await post(config)
+            if (_debug) {
+                console.info(res)
+                console.info(`↑↑↑↑↑↑↑ response end ↑↑↑↑↑↑↑`)
+                console.info(`${config.url}`)
+            }
         } else {
             return false
         }
@@ -162,7 +182,12 @@ class Axios {
             dataType
         })
         let res = {}
-        let config = { data, header, dataType, callback }
+        let config = {
+            data,
+            header,
+            dataType,
+            callback
+        }
         if (before_res) {
             if (loading) {
                 wx.showLoading({
@@ -170,8 +195,24 @@ class Axios {
                     mask: true
                 });
             }
-            config = { data, header, dataType, callback, ...before_res }
+            config = {
+                data,
+                header,
+                dataType,
+                callback,
+                ...before_res
+            }
+            if (_debug) {
+                console.info(`${config.url}`)
+                console.info(`↓↓↓↓↓↓↓ request begin ↓↓↓↓↓↓↓`)
+                console.info(config)
+            }
             res = await get(config)
+            if (_debug) {
+                console.info(res)
+                console.info(`↑↑↑↑↑↑↑ response end ↑↑↑↑↑↑↑`)
+                console.info(`${config.url}`)
+            }
         } else {
             return false
         }
@@ -203,7 +244,12 @@ class Axios {
             name
         })
         let res = {}
-        let config = { data, header, name, callback }
+        let config = {
+            data,
+            header,
+            name,
+            callback
+        }
         if (before_res) {
             if (loading) {
                 wx.showLoading({
@@ -211,7 +257,14 @@ class Axios {
                     mask: true
                 });
             }
-            config = { data, header, name, callback, ...before_res, formData: before_res.data }
+            config = {
+                data,
+                header,
+                name,
+                callback,
+                ...before_res,
+                formData: before_res.data
+            }
             await uploadFile(config)
         } else {
             return false
@@ -228,7 +281,7 @@ class Axios {
         return after_res
     }
 
-    requestAll = function () {
+    all = function (apis) {
         if (!apis instanceof Array) {
             throw new Error("你的组合请求不是一个数组")
         }
@@ -236,7 +289,6 @@ class Axios {
     }
 
 }
-
 
 function beforeRequest({
     api,
@@ -285,8 +337,7 @@ function beforeRequest({
                 config.isExLink = true
             }
         }
-    }
-    else {
+    } else {
         config.isExLink = true
     }
     // 到这里拿到最后请求的api地址
@@ -337,7 +388,9 @@ function post(config) {
             success: (res) => {
                 if (!_ignoreCode.includes(res.statusCode)) {
                     // 服务异常
-                    wx.showToast({ title: '客官别急，网络掉线了！' });
+                    wx.showToast({
+                        title: '客官别急，网络掉线了！'
+                    });
                     reject()
                 } else {
 
@@ -351,7 +404,9 @@ function post(config) {
                 } catch (error) {
 
                 }
-                wx.showToast({ title: '客官别急，网络掉线了！' });
+                wx.showToast({
+                    title: '客官别急，网络掉线了！'
+                });
                 reject()
             }
         })

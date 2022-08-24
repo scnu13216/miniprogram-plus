@@ -27,7 +27,7 @@ const store = new Store({ignoreKey : []})
 const i18n = new I18n(local)
 
 // 请求对象
-const axios = new Axios({})
+const axios = new Axios({debug:true})
 // 请求前拦截
 axios.interceptors.request.use(config => {
   config.data.haha = store.getters.haha
