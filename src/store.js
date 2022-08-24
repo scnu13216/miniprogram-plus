@@ -9,7 +9,16 @@ class Store {
         ignoreKey = []
     }) {
         this.component_stack = {}
-        this.getters = app.store.getters
+        this.getters = new Proxy(app.store.getters, {
+            // 支持自定义 getter 
+            get: function (target, property, receiver) {
+                if (typeof target[property] == 'function') {
+                    return target[property](app.store.state)
+                } else {
+                    return target[property]
+                }
+            }
+        })
         this.ignoreKey = ignoreKey
         // 支持缓存，是同层的
         syncStorage(ignoreKey)
@@ -50,8 +59,6 @@ class Store {
             console.error(error)
         }
     }
-
-
 }
 
 function autoStore() {
@@ -81,6 +88,8 @@ function autoStore() {
         }
     }
 }
+
+
 
 function syncStorage(ignoreKey) {
     let {
