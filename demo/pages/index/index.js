@@ -1,196 +1,314 @@
-// index.js
-// 获取应用实例
-const index_mixins = require('./index_mixin.js');
+// pages/paper-issue/index.js
+/* const computedBehavior = require("miniprogram-computed").behavior; */
+const app = getApp()
+let data
+// import {
+//   paper
+// } from '../../constances/paper.js';
 
-const {test1} = require('../../api/test')
+const Single = "单项选择题"
+const Multi = "多项选择题"
+const Five = "配伍选择题"
+const Complex = "综合分析题"
+
 Page({
-    data: {
-        foo: '你好呀1',
-        helloType: 't1',
-        obj: {
-            a: {
-                b: 123
-            },
-            c: 456,
-            d: [1, 2, 3]
-        },
-        arr: [0],
-    },
-    mixins: [index_mixins],
-    onLoad(...arg) {
-        // this.setData({
-        //   arr: [2,3]
-        // })
-        console.log(arg)
-        console.log(this)
-    },
-    onShow() {},
-    watch: {
-        helloType(n, o) {
-            console.log("helloType watch", n)
-        },
-        // 'obj'(n, o) {
-        //   console.log('obj 更新了 ', n)
-        // },
-        'obj': {
-            handler(n, o) {
-                console.log('obj 更新了 ', n, o)
-            },
-            deep: true
-        },
-        'foo2': 123,
-        'abc': {
-            deep: false,
-        },
-        'obj.a.b'(n, o) {
-            // 支持
-            console.log('obj.a.b 更新了 ', n)
-        },
-        'obj.d[0][0]'(n, o) {
-            // 支持
-            console.log('obj.d[0][0] 更新了 ', n)
-        },
-        'arr'(n, o) {
-            // 支持
-            console.log('arr 更新了')
-        },
-        'arr[0]'(n, o) {
-            // 支持 但是前提是data里面的 arr 变量原始值已存在 0 号值
-            console.log('arr[0] 更新了', n)
-        },
-        compute_foo(n, o) {
-            // 支持 监听 componentd 生成的变量 
-            console.log("watch compute_foo", n)
-        },
-        haha(n) {
-            // 通过 computed 监听store.state的变化
-            console.log("watch haha ", n)
+  /* behaviors: [computedBehavior], */
+  /**
+   * 页面的初始数据
+   */
+  data: {
+    issueList: [],
+
+    title: "药师仿真模拟考试",
+    issueList: [],
+    // swiper 控制变量
+    lock: false,
+    currentIssueArray: [],
+    swiperIndex: 0, // 当前显示下标
+    current: 0,
+    duration: 300,
+    showAnswerSheet: false,
+    progress: 1,
+    sum: 0,
+    navHeight: 0,
+
+    startTime: 0, // 开始时间
+    endTime: 0, // 结束时间
+
+    bottomBoxHeight: 0,
+    typeMode: 'asking',
+
+    swiperHeight: '90vh'
+  },
+
+  /**
+   * 生命周期函数--监听页面加载
+   */
+  onLoad(options) {
+    data = this.data
+    // this.setIssueList({
+    //   list: paper.data.content,
+    // })
+    // 获取试题
+  },
+
+  /**
+   * 生命周期函数--监听页面初次渲染完成
+   */
+  onReady() {
+
+  },
+
+  /**
+   * 生命周期函数--监听页面显示
+   */
+  onShow() {
+
+  },
+
+  /**
+   * 生命周期函数--监听页面隐藏
+   */
+  onHide() {
+
+  },
+
+  /**
+   * 生命周期函数--监听页面卸载
+   */
+  onUnload() {
+
+  },
+
+  /**
+   * 页面相关事件处理函数--监听用户下拉动作
+   */
+  onPullDownRefresh() {
+
+  },
+
+  /**
+   * 页面上拉触底事件的处理函数
+   */
+  onReachBottom() {
+
+  },
+
+  /**
+   * 用户点击右上角分享
+   */
+  onShareAppMessage() {
+
+  },
+
+  /**
+   * 计算属性
+   */
+  computed: {
+    currentIssue: function()  {
+      let currentIssue = this.data.currentIssueArray[this.data.swiperIndex]
+      // 顺便计算一下当前的进度
+      let progress = 1
+      if (this.data.currentIssueArray.length > 0) {
+        switch (currentIssue.issuesType) {
+          case Multi:
+          case Single: {
+            progress = currentIssue.progressIndex
+            break
+          }
+          case Complex:
+          case Five: {
+            progress = currentIssue.issue.issuse[0].progressIndex
+            break
+          }
         }
+      } else {
+        progress = 1
+      }
+      this.setData({
+        progress
+      })
+      return currentIssue
     },
-    computed: {
-        compute_foo: function () {
-            if (this.data.foo == "你好呀1") {
-                return '数据还没改变'
-            } else {
-                return '数据改变了！！！！'
+  },
+
+  /**
+   * 处理数据列表
+   */
+  setIssueList({
+    list = [],
+    key = 0,
+    minute = 1,
+    title = 'none'
+  }) {
+    // 真题
+    data.key = key
+    data.startTime = 0.1
+    data.endTime = minute * 60 // 后台给的是分钟  要转成秒
+
+    if (list.length == 0) {
+      return
+    }
+
+    let issueList = list
+    let index = 1
+    issueList.forEach((v, i) => {
+      switch (v.issuesType) {
+        case Multi:
+        case Single: {
+          v.index = i // 这个是大题目下标 
+          if (!v.hasOwnProperty('issueIndex')) {
+            v.issueIndex = index // 这个是小题目下标
+          }
+          v.progressIndex = index
+          index++
+          break
+        }
+        case Five:
+        case Complex: {
+          v.index = i
+          v.issue.issuse.forEach(v2 => {
+            if (!v2.hasOwnProperty("issueIndex")) {
+              v2.issueIndex = index
             }
-        },
-        haha() {
-            return this._store.haha
-        },
-        sayHello() {
-            return this.data._t[this.data.helloType]
+            v2.progressIndex = index
+            index++
+          })
+          break;
         }
-    },
+      }
+      if (this.data.typeMode == 'Analysis') {
+        v.showAnswer = true
+      }
+    })
 
-    methods: {
-        async handle_change_data() {
-            // let userInfo = await wx.getUserProfile({
-            //   lang: 'zh_CN',
-            //   desc: '用于在界面展示用户头像和昵称'
-            // })
-            // console.log(userInfo)
-            // this.setData({
-            //   [`obj.a.b`]: 123123
-            // })
-            this.setData({
-                ['arr[0]']: 2
-            })
-            //   this.setData({
-            //     [`obj.d[0]`]: [4, 5, 6]
-            //   })
-            // this.setData({
-            //   [`obj`]: { c: 23333 }
-            // })
-            // this.data.obj = {
-            //   a:12312
-            // }
-            // this.data.obj.a.b = 22222
+    data.issueList = issueList // 题目的数据主体
+    this.setData({
+      sum: index - 1,
+      issueList: issueList
+    }, () => {
+      // 拿到初始展示的题目
+      this.getCurrentIssueArray()
+    })
+  },
 
-            //   this.setData({
-            //     helloType:{
-            //         a:new Date().getTime()
-            //     }
-            //   })
-        },
-        async handle_change_data2() {
-            this.setData({
-                [`obj.d[0][0]`]: [4, 5, 6]
-            })
-        },
-        handle_get_event_data(e, {
-            data
-        }) {
-            wx.showToast({
-                icon: "none",
-                title: `${data.foo}`,
-            })
-        },
-        handle_event_from_demo(e) {
-            console.log("收到来自组件抛出事件的数据", e)
-        },
-        handle_changefoo() {
-            this.setData({
-                foo: "hah23"
-            })
-        },
-        handle_commitHaha() {
-            this.$store.commit('setHaha', '123hhhh 123123')
-        },
-        async handle_doRequest() {
-            //   let res = await this.$axios.get({
-            //     api: "https://tcc.taobao.com/cc/json/mobile_tel_segment.htm",
-            //     headers: {
-            //       'content-type': 'application/javascript;charset=GBK'
-            //     },
-            //     data: {
-            //       tel: `17336132487`
-            //     },
-            //     loading: false
-            //   })
-            //   console.log(res)
-
-            let res = await this.$axios.all([
-                // this.$axios.get({
-                //     api: "https://tcc.taobao.com/cc/json/mobile_tel_segment.htm",
-                //     headers: {
-                //         'content-type': 'application/javascript;charset=GBK'
-                //     },
-                //     data: {
-                //         tel: `17336132487`
-                //     },
-                //     loading: false
-                // }),
-                test1(),
-                1
-            ])
-            console.log(res)
-        },
-        handle_changeLanguage() {
-            let language = wx.getStorageSync('language')
-            if (language == 'zh_CN') {
-                this.$i18n.setLocale('en_US')
-            } else {
-                this.$i18n.setLocale('zh_CN')
-            }
-
-        },
-        handle_run_component_func1() {
-            // 不是很建议这样做
-            this._refs.demoComponent.component_func1()
-        },
-        handle_changeHelloType() {
-            this.setData({
-                helloType: 't2'
-            })
-        },
-        handle_onEmit(){
-            this.$on('from_demo',this.handle_event_from_demo)
-        },
-        handle_offEmit(){
-            this.$off('from_demo',this.handle_event_from_demo)
+  /**
+   * 处理当前展示的三条题目
+   */
+  getCurrentIssueArray(next) {
+    // 获取当前应该显示三个题目
+    // 三题以内不做复杂操作
+    if (this.data.issueList.length <= 3) {
+      this.setData({
+        currentIssueArray: this.data.issueList
+      })
+      return
+    }
+    const loopIndex = (index) => {
+      if (0 <= index && index <= this.data.issueList.length - 1) {
+        return index
+      } else {
+        if (index < 0) {
+          return this.data.issueList.length + index
         }
-    },
+        if (index > this.data.issueList.length - 1) {
+          return index % this.data.issueList.length
+        }
+      }
+    }
+    let arr = []
+    if (next == undefined) {
+      arr.push(this.data.issueList[0])
+      arr.push(this.data.issueList[1])
+      arr.push(this.data.issueList[loopIndex(-1)])
+      this.setData({
+        currentIssueArray: arr
+      })
 
 
+      return
+    }
+    // 三题以上处理
+    // swiperIndex 上一次显示的swiper下标
+    // next 是他的切换目标 
+    // 情况如下  
+    // swiperIndex = 0  next = 1 往前 | next = 2 往后
+    // swiperIndex = 1  next = 2 往前 | next = 0 往后
+    // swiperIndex = 2  next = 0 往前 | next = 1 往后
+    if (this.data.swiperIndex == 0) {
+      if (next == 1) {
+        // 前进
+        let staticIndex = this.data.currentIssueArray[1].index
+        arr.push(this.data.issueList[loopIndex(staticIndex - 1)])
+        arr.push(this.data.issueList[staticIndex])
+        arr.push(this.data.issueList[loopIndex(staticIndex + 1)])
+      }
+      if (next == 2) {
+        // 后退
+        let staticIndex = this.data.currentIssueArray[2].index
+        arr.push(this.data.issueList[loopIndex(staticIndex + 1)])
+        arr.push(this.data.issueList[loopIndex(staticIndex - 1)])
+        arr.push(this.data.issueList[staticIndex])
+      }
+    }
+    if (this.data.swiperIndex == 1) {
+      if (next == 2) {
+        // 前进
+        let staticIndex = this.data.currentIssueArray[2].index
+        arr.push(this.data.issueList[loopIndex(staticIndex + 1)])
+        arr.push(this.data.issueList[loopIndex(staticIndex - 1)])
+        arr.push(this.data.issueList[staticIndex])
+      }
+      if (next == 0) {
+        // 后退
+        let staticIndex = this.data.currentIssueArray[0].index
+        arr.push(this.data.issueList[staticIndex])
+        arr.push(this.data.issueList[loopIndex(staticIndex + 1)])
+        arr.push(this.data.issueList[loopIndex(staticIndex - 1)])
+      }
+    }
+    if (this.data.swiperIndex == 2) {
+      if (next == 0) {
+        // 前进
+        let staticIndex = this.data.currentIssueArray[0].index
+        arr.push(this.data.issueList[staticIndex])
+        arr.push(this.data.issueList[loopIndex(staticIndex + 1)])
+        arr.push(this.data.issueList[loopIndex(staticIndex - 1)])
+      }
+      if (next == 1) {
+        // 后退
+        let staticIndex = this.data.currentIssueArray[1].index
+        arr.push(this.data.issueList[loopIndex(staticIndex - 1)])
+        arr.push(this.data.issueList[staticIndex])
+        arr.push(this.data.issueList[loopIndex(staticIndex + 1)])
+      }
+
+    }
+    setTimeout(() => {
+      this.setData({
+        currentIssueArray: arr,
+        progress: ''
+      })
+    }, this.data.duration / 2)
+  },
+
+  /**
+   * 滑动切换题目
+   */
+  handle_swiperChange(e) {
+    if (data.lock) {
+      return
+    }
+    data.lock = true
+    this.setData({
+      lock: true
+    })
+    this.getCurrentIssueArray(e.detail.current)
+    setTimeout(() => {
+      this.setData({
+        lock: false,
+        swiperIndex: e.detail.current
+      })
+    }, data.duration / 2)
+  },
 })

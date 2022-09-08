@@ -221,7 +221,7 @@ async function page_inject_computed(options) {
             delete options.computed[v]
             return
         }
-        let values = (options.computed[v].toString().replace(/\s+/g, '').match(value_reg) || []).map(v => v.replace(/(this.data.|this._store.)/, '').match(/\w+/)[0])
+        let values = (options.computed[v].toString().replace(/(?:^|\n|\r)\s*\/\*[\s\S]*?\*\/\s*(?:\r|\n|$)/g,'').replace(/(?:^|\n|\r)\s*\/\/.*(?:\r|\n|$)/g,'').match(value_reg) || []).map(v => v.replace(/(this.data.|this._store.)/, '').match(/\w+/)[0])
         if (values.length) {
             values.forEach(_v => {
                 // todo 判断计算属性中是否已有涉及属性
@@ -640,7 +640,7 @@ async function component_inject_computed(options) {
         let value_reg = /(this.data.|this._store.)[\w|.|\$]*/g
         Object.keys(options.computed).forEach(v => {
             // todo 垃圾小程序不支持数值试探语法
-            let _match = options.computed[v].toString().replace(/\s+/g, '').match(value_reg) || []
+            let _match = options.computed[v].toString().replace(/(?:^|\n|\r)\s*\/\*[\s\S]*?\*\/\s*(?:\r|\n|$)/g,'').replace(/(?:^|\n|\r)\s*\/\/.*(?:\r|\n|$)/g,'').match(value_reg) || []
             let values = _match.map(v => v.replace(/(this.data.|this._store.)/, '').match(/(\w|\$)+/)[0])
             if (values.length) {
                 values.forEach(_v => {

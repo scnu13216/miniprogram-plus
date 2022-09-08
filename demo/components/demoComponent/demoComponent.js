@@ -17,11 +17,11 @@ Component({
 
     computed: {
         compute_foo: function () {
-            if (this._store.haha == "你好呀1") {
-                return '数据还没改变'
-            } else {
-                return '数据改变了！！！！'
-            }
+            // if (this._store.haha == "你好呀1") {
+            //     return '数据还没改变'
+            // } else {
+            //     return '数据改变了！！！！'
+            // }
         },
     },
 
