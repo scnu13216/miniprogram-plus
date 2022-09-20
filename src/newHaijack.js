@@ -266,28 +266,60 @@ async function page_haijack_onLoad(options) {
 
         // todo 开启数据监听
         this._data = dataProxy(this.data, {
-            set: (root, setDataPath, setDataPath_ary, oldValue, newValue) => {
-                function deepObjectValue(target, key_ary, newValue) {
-                    let current = target
-                    for (let i = 0; i < key_ary.length - 1; i++) {
-                        current = target[key_ary[i]]
+            // root 就是 this.data 的指针
+            set: (root, setDataPath, oldValue, newValue) => {
+                let afterUpdated = []
+                if (options.hasOwnProperty('watch')) {
+                    // 当前级的 watch 处理
+                    if (options.watch.hasOwnProperty(setDataPath)) {
+                        if (typeof options.watch[setDataPath] === 'function') {
+                            afterUpdated.push({
+                                action: (newValue, oldValue) => {
+                                    options.watch[setDataPath].call(this, newValue, oldValue)
+                                },
+                                newValue: newValue,
+                                oldValue: oldValue
+                            })
+                        }
                     }
-                    current = newValue
+                    // 要处理深度监听的 watch 变量
+                    for (let i = 0; i < options.deepWatchName.length; i++) {
+                        if (setDataPath.includes(options.deepWatchName[i])) {
+                            let deepName_ary = getPathAry(options.deepWatchName[i])
+                            let deepOldValue = getObjectValue(root, deepName_ary)
+                            let deepNewValue = getObjectValue(this._data, deepName_ary)
+                            afterUpdated.push({
+                                action: (newValue, oldValue) => {
+                                    options.watch[options.deepWatchName[i]].call(this, newValue, oldValue)
+                                },
+                                newValue: deepNewValue,
+                                oldValue: deepOldValue
+                            })
+                        }
+                    }
                 }
-                deepObjectValue(root, setDataPath_ary, newValue)
+
+                afterUpdated.push({
+                    action: () => {
+                        if (options.computed_obj.hasOwnProperty(setDataPath)) {
+                            options.computed_obj[setDataPath].forEach(v => {
+                                this[v]()
+                            })
+                        }
+                    }
+                })
+                console.log(afterUpdated)
+                let setDataPath_ary = getPathAry(setDataPath)
+                setObjectNewValue(root, setDataPath_ary, newValue)
                 this.setData({
                     [setDataPath]: newValue
                 })
-                if (options.hasOwnProperty('watch')) {
-                    if (options.watch.hasOwnProperty(setDataPath)) {
-                        options.watch[setDataPath].call(this, oldValue, newValue)
-                    }
-                }
-                if (options.computed_obj.hasOwnProperty(setDataPath)) {
-                    options.computed_obj[setDataPath].forEach(v => {
-                        this[v]()
-                    })
-                }
+                afterUpdated.forEach(v => {
+                    try {
+                        v.action.call(this,v.newValue,v.oldValue)
+                    } catch (e) { }
+                })
+
             }
         })
 
@@ -662,14 +694,7 @@ async function component_haijack_attached(options) {
         // todo 扩展数据监听
         this._data = dataProxy(this.data, {
             set: (root, setDataPath, setDataPath_ary, oldValue, newValue) => {
-                function deepObjectValue(target, key_ary, newValue) {
-                    let current = target
-                    for (let i = 0; i < key_ary.length - 1; i++) {
-                        current = target[key_ary[i]]
-                    }
-                    current = newValue
-                }
-                deepObjectValue(root, setDataPath_ary, newValue)
+                setObjectNewValue(root, setDataPath_ary, newValue)
                 this.setData({
                     [setDataPath]: newValue
                 })
@@ -936,6 +961,30 @@ const isType = obj => {
     };
     return map[toString.call(obj)];
 };
+
+function getPathAry(path) {
+    return path.split('.').map(v => {
+        if (v.includes('[')) {
+            return v.replace(/\]/g, '').split('[')
+        } else {
+            return v
+        }
+    }).flat()
+}
+function setObjectNewValue(target, key_ary, newValue) {
+    let current = target
+    for (let i = 0; i < key_ary.length - 1; i++) {
+        current = target[key_ary[i]]
+    }
+    current = newValue
+}
+function getObjectValue(target, key_ary) {
+    let current = target
+    for (let i = 0; i < key_ary.length; i++) {
+        current = target[key_ary[i]]
+    }
+    return current
+}
 
 
 module.exports = haijack

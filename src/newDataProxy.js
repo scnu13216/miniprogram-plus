@@ -1,7 +1,6 @@
 // 全新的 proxy 深度代理，支持无限级自动生成代理并添加自定义handler切面
 
 // 目前只处理简单数据类型的代理。root 必须是个对象或者数组，否则返回原值
-
 const util = require('./util')
 
 function proxyObj(root, handler = { set() { }, get() { } }) {
@@ -15,14 +14,20 @@ function proxyObj(root, handler = { set() { }, get() { } }) {
 
     let _handler = {
         get(target, propKey, receiver) {
-            console.log('proxy get :', target, propKey, receiver)
-            handler.get(arguments)
+            // console.log('proxy get :', target, propKey, receiver)
+            try {
+                handler.get(arguments)
+            } catch (error) {
+
+            }
+
             return target[propKey]
         },
         set(target, propKey, value, receiver) {
-            console.log('proxy set :', target, propKey, value, receiver)
+            // console.log('proxy set :', target, propKey, value, receiver)
             // 固化旧值
-            let oldValue = util.deepClone(target[propKey])
+            let oldValue = util.deepClone(target[propKey]) // 固化数据
+            let oldRootData = util.deepClone(root) // 固化数据
             if (value === null || value === undefined) {
                 target[propKey] = value
             }
@@ -33,20 +38,19 @@ function proxyObj(root, handler = { set() { }, get() { } }) {
                 target[propKey] = deepProxy(value, receiver.__path__, propKey, _handler)
             }
             let setDataPath = receiver.__path__.replace(/\$key/, propKey)
-            let setDataPath_ary = setDataPath.split('.').map(v => {
-                if (v.includes('[')) {
-                    return v.replace(/\]/g, '').split('[')
-                } else {
-                    return v
-                }
-            }).flat()
-            // console.log(root, setDataPath, setDataPath_ary)
-            handler.set(root, setDataPath, setDataPath_ary, oldValue, value)
+            try {
+                handler.set(root, setDataPath, oldValue, value, newRoot, oldRootData)
+            } catch (error) {
+
+            }
+
             return true
         },
     }
 
-    return deepProxy(root, '$key', '', _handler)
+    let newRoot = deepProxy(root, '$key', '', _handler)
+
+    return newRoot
 
     function deepProxy(obj, lastPath = '', currentKey = '', handler = {}, hash = new WeakMap()) {
         if (obj === null || obj === undefined) {
@@ -89,4 +93,4 @@ function proxyObj(root, handler = { set() { }, get() { } }) {
 }
 
 
-export default proxyObj
+module.exports = proxyObj
